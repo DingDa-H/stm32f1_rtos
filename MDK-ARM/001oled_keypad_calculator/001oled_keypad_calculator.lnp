@@ -1,0 +1,25 @@
+--cpu Cortex-M3
+"001oled_keypad_calculator\startup_stm32f103xb.o"
+"001oled_keypad_calculator\main.o"
+"001oled_keypad_calculator\stm32f1xx_it.o"
+"001oled_keypad_calculator\stm32f1xx_hal_msp.o"
+"001oled_keypad_calculator\stm32f1xx_hal_gpio_ex.o"
+"001oled_keypad_calculator\stm32f1xx_hal.o"
+"001oled_keypad_calculator\stm32f1xx_hal_rcc.o"
+"001oled_keypad_calculator\stm32f1xx_hal_rcc_ex.o"
+"001oled_keypad_calculator\stm32f1xx_hal_gpio.o"
+"001oled_keypad_calculator\stm32f1xx_hal_dma.o"
+"001oled_keypad_calculator\stm32f1xx_hal_cortex.o"
+"001oled_keypad_calculator\stm32f1xx_hal_pwr.o"
+"001oled_keypad_calculator\stm32f1xx_hal_flash.o"
+"001oled_keypad_calculator\stm32f1xx_hal_flash_ex.o"
+"001oled_keypad_calculator\stm32f1xx_hal_exti.o"
+"001oled_keypad_calculator\system_stm32f1xx.o"
+"001oled_keypad_calculator\oled_device.o"
+"001oled_keypad_calculator\oled_font.o"
+"001oled_keypad_calculator\keypad4_4.o"
+"001oled_keypad_calculator\test.o"
+--library_type=microlib --strict --scatter "001oled_keypad_calculator\001oled_keypad_calculator.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "001oled_keypad_calculator.map" -o 001oled_keypad_calculator\001oled_keypad_calculator.axf
