@@ -4,6 +4,6 @@
 
 
 独立完成的物理按键驱动，
-图片是按键的状态机
+图片是按键的状态机,其中长按逻辑没有优化（长按事件生成是按键松开时）
 
 <img width="612" height="613" alt="image" src="https://github.com/user-attachments/assets/afd112e3-0167-41f1-8630-13f7988c0d9f" />
