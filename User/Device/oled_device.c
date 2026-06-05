@@ -537,7 +537,7 @@ void vOledDrawRectangle(uint32_t x, uint32_t y,uint32_t ulLenght,emOledFontSizeT
 /// @note		实现用箭头指向被选中按钮
 void vOledDrawArrow(uint32_t x, uint32_t y,emOledFontSizeTdf emFontSize,emOledDevNumTdf emDevNum)
 {
-	uint32_t i;
+//	uint32_t i;
 	char ucdata[] = "->";
 	
 	vOledWriteStringToBuffer(x - strlen(ucdata) * emFontSize / 2 - 1,y,(uint8_t *)&ucdata,emFontSize,emOledPixelShowMode_Positive,emDevNum);

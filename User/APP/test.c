@@ -7,7 +7,6 @@
 
 												//static 在这里的作用：限制作用域
 static stFsmRunParamTdf s_stCalcParam;  		// 静态，编译器自动清零，但再次调用 Init 重置
-#define EM_FONT_SIZE 	emOledFontSize_12x24
 //状态处理函数指针定义
 typedef emStateTdf efsmCallbackTdf(emEventTdf event,uint8_t key);
 
@@ -35,12 +34,16 @@ void vOledInit(void)
 	
 	vOledDeviceInit(&stInit, OLED);
 }
-
+/**
+ * @brief 		状态机初始化函数
+ * @param 	
+ * @data 			
+ * @note 		
+ */
 
 void vCalcSystemInit(void)
 {
     vCalcParamInit(&s_stCalcParam);
-    // 如果需要，还可以在这里添加其他初始化代码（如 OLED 清屏等）
 }
 
 /**
@@ -469,7 +472,7 @@ void vState_machine_run(uint8_t key)
  * @brief 		测试函数待优化
  * @version 	
  * @data 			
- * @note 		实现加减乘除的思路，定义一个字符串数组，终止符是+、-、*、/
+ * @note 		实现加减乘除的思路，状态机/
  */
 
 void vTest(void)
@@ -481,9 +484,12 @@ void vTest(void)
 	{
 		if(ucKey != 0)
 		{
-			vState_machine_run(ucKey);	//轮询状态机
-			vOledRefreshFromBuffer(OLED);	//更新缓存	
+			vState_machine_run(ucKey);			//轮询状态机
+			vOledRefreshFromBuffer(OLED);		//更新缓存	
 			
 		}		
 	}
+	
+	
+	
 }
