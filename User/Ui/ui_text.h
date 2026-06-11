@@ -1,0 +1,32 @@
+/**
+ * @brief 		单行文本实现
+ * @version 	DingDa-H	
+ * @data 		20260606	
+ * @note 		........
+ */
+
+#ifndef __UI_TEXT_H
+#define __UI_TEXT_H
+
+#include "stm32f1xx_hal.h"
+#include "project.h"
+#include "oled_device.h"
+
+/**
+ * @brief 		文本控件数据结构
+ * @param 		
+ * @data 			
+ * @note 		
+ */
+ 
+typedef struct
+{
+	uint32_t 					x;							//起始x坐标
+	uint32_t					y;							//起始y坐标
+	uint8_t 					*ucData;					//要显示的字符串
+	emOledFontSizeTdf			emFontSize;					//字号大小
+}
+stTextItemTdf;
+
+void vShowSingleLineAll(void);
+#endif

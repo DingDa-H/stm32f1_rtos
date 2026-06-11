@@ -1,0 +1,369 @@
+/**
+ * @brief 		ui按钮控件实现
+ * @version 	DingDa-H	
+ * @data 		20260608	
+ * @note 		目前基本功能已经实现，多按钮复用框架也留下了，切换控制多个led暂时搁置了。
+ * @note 		二级菜单也大致搞定，s_stNumberSelector（数字选择器控件，用于切换控制多个led）待完善
+ */
+#include "stm32f1xx_hal.h"
+#include "string.h"
+#include <stdint.h>
+#include <ui_button.h>
+//	.x			= 64 - (sizeof(s_aucLed0) / sizeof(s_aucLed0[0]) - 1) / 2 * EM_FONT_SIZE / 2,
+
+uint8_t ucGetUibuttonSelectedIndex(void);
+void vButtonCallback_On(void *pCtx);
+void vButtonCallback_Off(void *pCtx);
+void vButtonCallback_Turn(void *pCtx);
+
+static uint8_t s_ucWindowStart = 0;  					// 当前显示窗口第一行在数组中的索引
+	
+//static uint8_t s_aucCalc[]   = "1.Calculator";			//计算器
+//static uint8_t s_aucLed[]    = "2.LED Control";			//led控制
+//static uint8_t s_aucSnake[]  = "3.Snake Game";			//贪吃蛇
+//static uint8_t s_aucSerial[] = "4.Serial Test";			//串口收发
+
+
+static uint8_t s_aucLedOn[]    		= "On";					//LedOn
+static uint8_t s_aucLedOff[]  	 	= "Off";				//LedOff
+static uint8_t s_aucLedTurn[]   	= "Turn";				//LedTurn
+
+static uint8_t s_aucLed[]  			= "Led";				//Led
+
+/**
+ * @brief 		数字选择器控件]
+ * @version 	
+ * @data 			
+ * @note 		数字选择器初始化
+ */
+static stNumberSelectorTdf s_stNumberSelector = 
+{
+	.x							= 64 - (sizeof(s_aucLed) / sizeof(s_aucLed[0]) - 1) / 2 * EM_FONT_SIZE / 2
+							+ (sizeof(s_aucLed)/sizeof(s_aucLed[0]) - 1) * EM_FONT_SIZE / 2 + 5,
+	.y							= 3,
+	.ucValue					= 0,
+	.emFontSize 				= EM_FONT_SIZE,
+	.emSelectStatus				= emUibuttonSelectStatus_Flase,
+	.emNumberbutIsPressStatus	= emUibuttonIsPress_Flase,
+	.emNumberPressStatusLast	= emUibuttonIsPress_Flase,
+	.uCnt						= 0,
+	.uCntThreshold				= 20,
+	.vpfCallback				= 0,
+};
+
+/**
+ * @brief 		[LedOn按钮控件]
+ * @version 	
+ * @data 			
+ * @note 		按钮控件初始化
+ */
+static stUibuttonItemTdf s_stUibutton_Led_On = 
+{
+	.x							= 80,
+	.y							= 25,
+	.ucData						= s_aucLedOn,
+	.emFontSize 				= EM_FONT_SIZE,
+	.emSelectStatus				= emUibuttonSelectStatus_True,
+	.emUibutIsPressStatus		= emUibuttonIsPress_Flase,
+	.emButtonPressStatusLast	= emUibuttonIsPress_Flase,
+	.uCnt						= 0,
+	.uCntThreshold				= 20,
+	.vpfCallback				= vButtonCallback_On,
+};
+
+static stUibuttonItemTdf s_stUibutton_Led_Off = 
+{
+	.x							= 20,
+	.y							= 25,
+	.ucData						= s_aucLedOff,
+	.emFontSize 				= EM_FONT_SIZE,
+	.emSelectStatus				= emUibuttonSelectStatus_Flase,
+	.emUibutIsPressStatus		= emUibuttonIsPress_Flase,
+	.emButtonPressStatusLast	= emUibuttonIsPress_Flase,
+	.uCnt						= 0,
+	.uCntThreshold				= 20,
+	.vpfCallback				= vButtonCallback_Off,
+};
+
+static stUibuttonItemTdf s_stUibutton_Led_Turn = 
+{
+	.x							= 20,
+	.y							= 45,
+	.ucData						= s_aucLedTurn,
+	.emFontSize 				= EM_FONT_SIZE,
+	.emSelectStatus				= emUibuttonSelectStatus_Flase,
+	.emUibutIsPressStatus		= emUibuttonIsPress_Flase,
+	.emButtonPressStatusLast	= emUibuttonIsPress_Flase,
+	.uCnt						= 0,
+	.uCntThreshold				= 20,
+	.vpfCallback				= vButtonCallback_Turn,
+};
+
+// 子菜单按钮控件 结构体指针数组
+static stUibuttonItemTdf *s_astUibuttons[] = {
+	&s_stUibutton_Led_On,
+	&s_stUibutton_Led_Off,
+	&s_stUibutton_Led_Turn,
+};
+
+/**
+ * @brief 		实现按钮反色显示后恢复
+ * @param 		btn:按钮指针
+ * @note 		实现了按钮反色显示后恢复
+ */
+emUibuttonTriggerStuTdf emUibuttonTriggerStuScan(stUibuttonItemTdf *btn)
+{
+	emUibuttonTriggerStuTdf emUibuttonTriggerStu = emUibuttonTriggerStu_Flase;
+	//按钮被按下
+	if(btn->emButtonPressStatusLast == emUibuttonIsPress_Flase && btn->emUibutIsPressStatus == emUibuttonIsPress_True)
+	{
+		btn->uCnt = 0;
+		emUibuttonTriggerStu = emUibuttonTriggerStu_True;
+	}
+	// 2. 【按下保持】只要是按下状态，就开始计时恢复
+	if(btn->emButtonPressStatusLast == emUibuttonIsPress_True && btn->emUibutIsPressStatus == emUibuttonIsPress_True)
+	{
+		btn->uCnt++;
+		//状态更新
+		if(btn->uCnt > btn->uCntThreshold)
+		{
+			btn->emUibutIsPressStatus = emUibuttonIsPress_Flase;
+			btn->uCnt = 0;
+		}
+	}
+	// 3. 更新上一次状态
+	btn->emButtonPressStatusLast = btn->emUibutIsPressStatus;
+	return emUibuttonTriggerStu;
+}
+
+// 公共回调函数,目前没必要
+//void BtnCommonCallback(void *pCtx)
+//{
+//    // 方式1：分步写法（易懂）
+//    stUibuttonItemTdf *pBtn = (stUibuttonItemTdf *)pCtx;
+//    
+//    if (pBtn->ucData == s_aucLedOn)
+//    {
+//        vLed_On(LED0);
+//    }
+//    else if (pBtn->ucData == s_aucLedOff)
+//    {
+//        vLed_Off(LED0);
+//    }
+//    else if (pBtn->ucData == s_aucLedTurn)
+//    {
+//        vLed_Turn(LED0);
+//    }
+//}
+/**
+ * @brief 		按钮回调函数
+ * @param 	
+ * @data 		
+ * @note 		框架能力还在，只是暂时没使用。
+ */
+void vButtonCallback_On(void *pCtx)
+{
+    // 外层已经判定触发，直接执行功能，无需再次扫描
+    (void)pCtx;  // 消除参数未使用警告
+    vLed_On(LED0);
+}
+
+void vButtonCallback_Off(void *pCtx)
+{
+    (void)pCtx;
+    vLed_Off(LED0);
+}
+
+void vButtonCallback_Turn(void *pCtx)
+{
+    (void)pCtx;
+    vLed_Turn(LED0);  // 翻转功能
+}
+
+// 遍历所有回调函数
+void vBtnScanAndExecute(void)
+{
+    uint8_t i;
+    uint8_t ucCount = sizeof(s_astUibuttons) / sizeof(s_astUibuttons[0]);
+
+    for (i = 0; i < ucCount; i++)
+    {
+        // 扫描：每个按钮都必须调用，更新内部状态
+        emUibuttonTriggerStuTdf eTrig = emUibuttonTriggerStuScan(s_astUibuttons[i]);
+
+        // 执行：只有被触发的按钮才执行业务逻辑
+        if (eTrig == emUibuttonTriggerStu_True)
+        {
+            if (s_astUibuttons[i]->vpfCallback != NULL)
+            {
+                s_astUibuttons[i]->vpfCallback(s_astUibuttons[i]);
+            }
+        }
+    }
+}
+
+/**
+ * @brief 		选中状态向下移动
+ * @note 		此函数针对按钮控件
+ */
+void vUibuttonSelectDown(void)
+{	
+	uint8_t i;
+	i = ucGetUibuttonSelectedIndex();
+	uint8_t ucCount = sizeof(s_astUibuttons) / sizeof(s_astUibuttons[0]);
+	
+	s_astUibuttons[i]->emSelectStatus = emUibuttonSelectStatus_Flase;
+
+	if(i >= ucCount - 1)
+	{
+		i = 0;
+	}
+	else
+	{
+		i++;
+	}		
+	s_astUibuttons[i]->emSelectStatus = emUibuttonSelectStatus_True;
+
+}
+/**
+ * @brief 		选中状态向上移动
+ * @note 		此函数针对按钮控件
+ */
+void vUibuttonSelectUp(void)
+{
+	uint8_t i;
+	i = ucGetUibuttonSelectedIndex();
+	s_astUibuttons[i]->emSelectStatus = emUibuttonSelectStatus_Flase;
+	
+	if(i <= 0)
+	{
+		i = sizeof(s_astUibuttons) / sizeof(s_astUibuttons[0]) - 1;		
+	}
+	else
+	{
+		i--;
+	}
+	s_astUibuttons[i]->emSelectStatus = emUibuttonSelectStatus_True;
+}
+
+/**
+ * @brief 		确认键功能函数
+ * @param 	
+ * @data 		
+ * @note 		实现ui按钮对应功能
+ */
+void vUibuttonEnter(void)
+{
+	uint8_t i;
+	i = ucGetUibuttonSelectedIndex();
+	s_astUibuttons[i]->emUibutIsPressStatus = emUibuttonIsPress_True;
+}
+
+/**
+ * @brief 		取消键功能函数
+ * @param 	
+ * @data 		
+ * @note 		实现ui按钮对应功能,返回上一级菜单（或退出）
+ */
+void vUibuttonCancel(void)
+{
+	uint8_t i;
+	i = ucGetUibuttonSelectedIndex();
+}
+
+//返回菜单结构体选中状态对应位置
+uint8_t ucGetUibuttonSelectedIndex(void)
+{
+	uint8_t i;
+	for(i = 0;i < sizeof(s_astUibuttons) / sizeof(s_astUibuttons[0]);i++)
+    {
+		//如果被选中就显示'>'字符
+		if(s_astUibuttons[i]->emSelectStatus == emUibuttonSelectStatus_True)
+		{
+			return i;
+		}
+    }
+	s_astUibuttons[0]->emSelectStatus = emUibuttonSelectStatus_True;
+    return 0;
+}
+
+/**
+ * @brief 		显示所有按钮控件
+ * @param 	
+ * @data 			
+ * @note 		
+ */
+void vShowUibuttonTextAll(void)
+{
+	uint8_t i;
+
+	for(i = 0;i < sizeof(s_astUibuttons) / sizeof(s_astUibuttons[0]);i++)
+    {				
+		//如果被选中就显示'>'字符
+		if(s_astUibuttons[i]->emSelectStatus == emUibuttonSelectStatus_True)
+		{
+			//用箭头指向被选中按钮
+			vOledDrawArrow(s_astUibuttons[i]->x,
+								 s_astUibuttons[i]->y,
+								 EM_FONT_SIZE,
+								 OLED);
+			
+		}
+		vOledDrawRectangle(s_astUibuttons[i]->x,
+								 s_astUibuttons[i]->y,
+								 (uint32_t)strlen( (const char*)s_astUibuttons[i]->ucData ) * (EM_FONT_SIZE/2),
+								 EM_FONT_SIZE,
+								 OLED);
+		if(s_astUibuttons[i]->emUibutIsPressStatus == emUibuttonIsPress_True)
+		{
+			vOledWriteStringToBuffer(s_astUibuttons[i]->x,
+								 s_astUibuttons[i]->y,
+								 s_astUibuttons[i]->ucData,
+								 EM_FONT_SIZE,
+								 emOledPixelShowMode_Negative,
+								 OLED);
+		}
+		else
+			vOledWriteStringToBuffer(s_astUibuttons[i]->x,
+									 s_astUibuttons[i]->y,
+									 s_astUibuttons[i]->ucData,
+									 EM_FONT_SIZE,
+									 emOledPixelShowMode_Positive,
+									 OLED);
+    }
+}
+
+/**
+ * @brief 		显示数字选择器
+ * @param 	
+ * @data 			stNumberSelectorTdf
+ * @note 		
+ */
+void vShowNumberSelectorAll(void)
+{
+				
+		
+
+	if(s_stNumberSelector.emNumberbutIsPressStatus == emUibuttonIsPress_True)
+	{
+		vOledWriteOneCharToBuffer(s_stNumberSelector.x,
+							 s_stNumberSelector.y,
+							 s_stNumberSelector.ucValue + 48,
+							 EM_FONT_SIZE,
+							 emOledPixelShowMode_Negative,
+							 OLED);
+	}
+	else
+		vOledWriteOneCharToBuffer(s_stNumberSelector.x,
+								 s_stNumberSelector.y,
+								 s_stNumberSelector.ucValue + 48,
+								 EM_FONT_SIZE,
+								 emOledPixelShowMode_Positive,
+								 OLED);
+
+	vOledDrawRectangle(s_stNumberSelector.x,
+						 s_stNumberSelector.y,
+						 EM_FONT_SIZE / 2,
+						 EM_FONT_SIZE,
+						 OLED);
+}
