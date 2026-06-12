@@ -81,7 +81,7 @@
           </BeforeMake>
           <AfterMake>
             <RunUserProg1>0</RunUserProg1>
-            <RunUserProg2>0</RunUserProg2>
+            <RunUserProg2>1</RunUserProg2>
             <UserProg1Name></UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xB</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;..\User\Device;..\User\APP</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../User/Device;../User/APP;..\User\Ui;..\User\Middle</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -500,6 +500,21 @@
               <FileType>5</FileType>
               <FilePath>..\User\Device\keypad4_4.h</FilePath>
             </File>
+            <File>
+              <FileName>led_device.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\Device\led_device.c</FilePath>
+            </File>
+            <File>
+              <FileName>project.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\User\Device\project.h</FilePath>
+            </File>
+            <File>
+              <FileName>botton.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\Device\botton.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -509,6 +524,41 @@
               <FileName>test.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\User\APP\test.c</FilePath>
+            </File>
+            <File>
+              <FileName>task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\APP\task.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>User/Ui</GroupName>
+          <Files>
+            <File>
+              <FileName>menu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\Ui\menu.c</FilePath>
+            </File>
+            <File>
+              <FileName>ui_button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\Ui\ui_button.c</FilePath>
+            </File>
+            <File>
+              <FileName>ui_text.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\Ui\ui_text.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>User/Middle</GroupName>
+          <Files>
+            <File>
+              <FileName>button_mid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\Middle\button_mid.c</FilePath>
             </File>
           </Files>
         </Group>

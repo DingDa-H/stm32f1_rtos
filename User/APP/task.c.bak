@@ -116,6 +116,7 @@ void vMainMenuKeyHandler(void)
 		if (emEventEnable == emBtnEvent_Click) {
 			vBtnEventClear(BUTTON_ENABLE);
 			vUibuttonEnter();
+			
 		}
 	}
     

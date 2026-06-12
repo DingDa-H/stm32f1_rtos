@@ -152,7 +152,7 @@
           <Type>0</Type>
           <LineNumber>63</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134223672</Address>
+          <Address>134222314</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -168,48 +168,32 @@
           <Type>0</Type>
           <LineNumber>62</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134223662</Address>
+          <Address>0</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
+          <BreakIfRCount>0</BreakIfRCount>
           <Filename>..\User\Device\keypad4_4.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\001oled_keypad_calculator\../User/Device/keypad4_4.c\62</Expression>
+          <Expression></Expression>
         </Bp>
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
           <LineNumber>104</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134223864</Address>
+          <Address>0</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
+          <BreakIfRCount>0</BreakIfRCount>
           <Filename>..\User\Device\keypad4_4.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\001oled_keypad_calculator\../User/Device/keypad4_4.c\104</Expression>
-        </Bp>
-        <Bp>
-          <Number>3</Number>
-          <Type>0</Type>
-          <LineNumber>180</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134224952</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\User\Ui\ui_button.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\001oled_keypad_calculator\../User/Ui/ui_button.c\180</Expression>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>

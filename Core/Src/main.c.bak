@@ -91,7 +91,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
-  Led_Init();											//led初始化
+  Led_Init();
 	vOledInit();										//初始化OLED-----中间层
 	vMenuInit();										//初始化菜单
 	vCalcSystemInit();									//初始化状态机运行参数

@@ -26,6 +26,6 @@
 001oled_keypad_calculator\test.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 001oled_keypad_calculator\test.o: E:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 001oled_keypad_calculator\test.o: ..\User\APP\test.h
-001oled_keypad_calculator\test.o: ..\User\Device\oled_device.h
-001oled_keypad_calculator\test.o: ..\User\Device\project.h
-001oled_keypad_calculator\test.o: ..\User\Device\keypad4_4.h
+001oled_keypad_calculator\test.o: ../User/Device/oled_device.h
+001oled_keypad_calculator\test.o: ../User/Device/project.h
+001oled_keypad_calculator\test.o: ../User/Device/keypad4_4.h

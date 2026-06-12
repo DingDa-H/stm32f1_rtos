@@ -225,7 +225,7 @@ void vShowLEDMenu(void)
 	vShowUibuttonTextAll();					//显示按钮
 	vShowSingleLineAll();					//显示单行文本
 	vShowNumberSelectorAll();				//显示数字选择器
-	vBtnScanAndExecute();				    //遍历所有回调函数
+//	vBtnScanAndExecute();				    //遍历所有回调函数
 }
 
 /**
