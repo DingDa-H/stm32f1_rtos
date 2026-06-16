@@ -22,6 +22,7 @@
 "001oled_keypad_calculator\led_device.o"
 "001oled_keypad_calculator\botton.o"
 "001oled_keypad_calculator\ring_buffer_device.o"
+"001oled_keypad_calculator\interpreter_device.o"
 "001oled_keypad_calculator\test.o"
 "001oled_keypad_calculator\task.o"
 "001oled_keypad_calculator\menu.o"

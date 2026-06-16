@@ -35,6 +35,6 @@ typedef struct
 stRingBufTdf;
 
 void vRingBufParamCopy(stRingBufTdf *pststaticInit,emRingBufNumTdf emDevNum);
-uint8_t ucReadOnebyte(uint8_t *pucByte);
-uint8_t ucWriteOnebyte(uint8_t byte);
+uint8_t ucReadOnebyte(uint8_t *pucByte,emRingBufNumTdf emDevNum);
+uint8_t ucReadOnebyte(uint8_t *pucByte,emRingBufNumTdf emDevNum);
 #endif

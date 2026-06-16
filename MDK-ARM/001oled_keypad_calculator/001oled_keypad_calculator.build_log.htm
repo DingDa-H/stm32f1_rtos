@@ -22,19 +22,28 @@ Dialog DLL:      TCM.DLL V1.32.0.0
  
 <h2>Project:</h2>
 E:\STM32-Study\CubeMxTest\01_Project\001oled_keypad_calculator\MDK-ARM\001oled_keypad_calculator.uvprojx
-Project File Date:  06/13/2026
+Project File Date:  06/16/2026
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 5 (build 528)', folder: 'E:\Keil_v5\ARM\ARMCC\Bin'
 Build target '001oled_keypad_calculator'
+compiling ring_buffer_device.c...
 compiling stm32f1xx_it.c...
-../Core/Src/stm32f1xx_it.c(219): warning:  #111-D: statement is unreachable
+../Core/Src/stm32f1xx_it.c(214): warning:  #223-D: function "ucWriteOnebyte" declared implicitly
+          ucWriteOnebyte(ucData,UART_RX_BUFFER);            /* 只写，不管满不满 */
+../Core/Src/stm32f1xx_it.c(218): warning:  #111-D: statement is unreachable
     HAL_UART_IRQHandler(&huart1);
-../Core/Src/stm32f1xx_it.c: 1 warning, 0 errors
+../Core/Src/stm32f1xx_it.c: 2 warnings, 0 errors
+compiling task.c...
+../User/Ui/menu.h(103): warning:  #1-D: last line of file ends without a newline
+  #endif
+..\User\APP\task.c(279): warning:  #1-D: last line of file ends without a newline
+  }
+..\User\APP\task.c: 2 warnings, 0 errors
 linking...
-Program Size: Code=7496 RO-data=6440 RW-data=236 ZI-data=2476  
+Program Size: Code=7684 RO-data=6440 RW-data=236 ZI-data=2476  
 FromELF: creating hex file...
-"001oled_keypad_calculator\001oled_keypad_calculator.axf" - 0 Error(s), 1 Warning(s).
+"001oled_keypad_calculator\001oled_keypad_calculator.axf" - 0 Error(s), 4 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -57,7 +66,7 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: ARM::CMSIS:CORE:5.0.1
-Build Time Elapsed:  00:00:02
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

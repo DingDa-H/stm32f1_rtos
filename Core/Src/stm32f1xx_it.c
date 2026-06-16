@@ -22,10 +22,9 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "task.h"
 #include <string.h>
 #include "ring_buffer_device.h"
-
+#include "project.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -212,7 +211,7 @@ void USART1_IRQHandler(void)
     if( (USART1->SR & USART_SR_RXNE) != 0 )
     {
 		uint8_t ucData = (uint8_t)(USART1->DR & 0xFF);    /* 读 DR 清标志 */
-        ucWriteOnebyte(ucData);                           /* 只写，不管满不满 */
+        ucWriteOnebyte(ucData,UART_RX_BUFFER);            /* 只写，不管满不满 */
     }
 	return;
   /* USER CODE END USART1_IRQn 0 */

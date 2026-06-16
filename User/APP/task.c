@@ -178,7 +178,7 @@ extern UART_HandleTypeDef huart1;
 void vUartFrameProcess(void)
 {
     uint8_t ucCh;
-    while (ucReadOnebyte(&ucCh) == 0) {       /* 环形缓冲区有数据 */
+    while (ucReadOnebyte(&ucCh,UART_RX_BUFFER) == 0) {       /* 环形缓冲区有数据 */
         if (ucCh == '\n') 
 		{
             if (s_ucFrameIndex < RX_BUF_SIZE - 1)

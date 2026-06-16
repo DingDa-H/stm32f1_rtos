@@ -28,19 +28,19 @@ void vRingBufParamCopy(stRingBufTdf *pststaticInit,emRingBufNumTdf emDevNum)
  * @rev 		0-成功	1-失败
  * @note 		向缓冲区写入字节
  */
-uint8_t ucWriteOnebyte(uint8_t byte,emRingBufNumTdf emDevNum)
+uint8_t ucWriteOnebyte(uint8_t byte)
 {
-	if(s_stRingBuf[emDevNum].ucCount >= RX_BUF_SIZE)
+	if(s_stRingBuf.ucCount >= RX_BUF_SIZE)
 	{
 		return 1;
 	}
 	
-	s_stRingBuf[emDevNum].aucBuf[s_stRingBuf[emDevNum].ucWrite ++] = byte;
-	if(s_stRingBuf[emDevNum].ucWrite >= RX_BUF_SIZE)
+	s_stRingBuf.aucBuf[s_stRingBuf.ucWrite ++] = byte;
+	if(s_stRingBuf.ucWrite >= RX_BUF_SIZE)
 	{
-		s_stRingBuf[emDevNum].ucWrite = 0;
+		s_stRingBuf.ucWrite = 0;
 	}
-	s_stRingBuf[emDevNum].ucCount++;
+	s_stRingBuf.ucCount++;
 	return 0;
 }
 
@@ -50,16 +50,16 @@ uint8_t ucWriteOnebyte(uint8_t byte,emRingBufNumTdf emDevNum)
  * @rev 		0-成功	1-失败
  * @note 		从缓冲区读取字节
  */
-uint8_t ucReadOnebyte(uint8_t *pucByte,emRingBufNumTdf emDevNum)
+uint8_t ucReadOnebyte(uint8_t *pucByte)
 {
-	if (s_stRingBuf[emDevNum].ucCount == 0)   // 空，无数据可读
+	if (s_stRingBuf.ucCount == 0)   // 空，无数据可读
     return 1;
 
-	*pucByte = s_stRingBuf[emDevNum].aucBuf[s_stRingBuf[emDevNum].ucRead ++];
-	if (s_stRingBuf[emDevNum].ucRead >= RX_BUF_SIZE) 
+	*pucByte = s_stRingBuf.aucBuf[s_stRingBuf.ucRead ++];
+	if (s_stRingBuf.ucRead >= RX_BUF_SIZE) 
 	{
-		s_stRingBuf[emDevNum].ucRead = 0;
+		s_stRingBuf.ucRead = 0;
 	}
-	s_stRingBuf[emDevNum].ucCount--;
+	s_stRingBuf.ucCount--;
 	return 0;
 }

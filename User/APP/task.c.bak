@@ -88,7 +88,7 @@ void RingBuf_Init(void)
 	
 	stRingBufTdf stRingBuf = {0};
 	
-	vRingBufParamCopy(&stRingBuf,emRingBufNum0);
+	vRingBufParamCopy(&stRingBuf,UART_RX_BUFFER);
 }
 /**
  * @brief 		物理按键事件驱动
