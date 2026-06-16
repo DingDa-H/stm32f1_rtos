@@ -1,6 +1,13 @@
 #include "stm32f1xx_hal.h"
 #include "string.h"
 #include <stdint.h>
+#include "oled_device.h"
+#include "keypad4_4.h"
+#include "button_mid.h"       // 按键中间层
+#include "led_device.h"
+#include "menu.h"
+#include "test.h"
+#include "ring_buffer_device.h"
 
 #include "task.h"
 
@@ -67,7 +74,22 @@ void Button_Init(void)
 	vBtnParamInit(&stBtnInit,BUTTON_CANCEL);
 }
 
-
+/**
+ * @brief 		环形缓冲区初始化
+ * @note 		
+ */
+void RingBuf_Init(void)
+{
+//	stRingBufTdf stRingBuf;
+//	stRingBuf.aucBuf			 			= {0};
+//	stRingBuf.ucCount						= 0;
+//	stRingBuf.ucRead						= 0;
+//	stRingBuf.ucWrite						= 0;
+	
+	stRingBufTdf stRingBuf = {0};
+	
+	vRingBufParamCopy(&stRingBuf,UART_RX_BUFFER);
+}
 /**
  * @brief 		物理按键事件驱动
  * @param 	
@@ -128,6 +150,110 @@ void vMainMenuKeyHandler(void)
     // 未触发事件的按键，无需清除（避免干扰状态机）
 }
 
+/**
+ * @brief 		串口收发
+ * @param 		缓存数组，状态标志位
+ * @data 		
+ * @note 		临时写在这里，先实现
+ */
+static uint8_t s_aucFrameBuf[RX_BUF_SIZE];  /* 独立的帧缓冲区 */
+
+static uint8_t s_ucFrameIndex;
+
+//接收标志位
+uint8_t s_ucRxComplete = 0;
+
+const uint8_t c_aucCmdLedOn[]    		= "LED0 On\r\n";				//led控制
+const uint8_t c_aucCmdLedOff[]    		= "LED0 Off\r\n";				//led控制
+const uint8_t c_aucCmdLedTurn[]    		= "LED0 Turn\r\n";				//led控制
+
+const uint8_t c_aucAckLed[] 			= "LED success\r\n";
+extern UART_HandleTypeDef huart1;
+
+/**
+ * @brief  UART frame process function
+ *         串口数据帧解析/处理
+ *         vUartFrameProcess就是用来组装一帧数据的
+ */
+void vUartFrameProcess(void)
+{
+    uint8_t ucCh;
+    while (ucReadOnebyte(&ucCh) == 0) {       /* 环形缓冲区有数据 */
+        if (ucCh == '\n') 
+		{
+            if (s_ucFrameIndex < RX_BUF_SIZE - 1)
+            {
+                s_aucFrameBuf[s_ucFrameIndex++] = ucCh;
+            }
+			// 2. 补字符串结束符 \0
+            s_aucFrameBuf[s_ucFrameIndex] = '\0';
+
+            s_ucRxComplete = 1;
+            s_ucFrameIndex = 0;
+            break;            /* 一次处理一帧 */
+        } 
+		else 
+		{
+            if (s_ucFrameIndex < RX_BUF_SIZE - 1) {
+                s_aucFrameBuf[s_ucFrameIndex++] = ucCh;
+            } else {
+                /* 单帧过长，丢弃并重置 */
+                s_ucFrameIndex = 0;
+            }
+        }
+    }
+		
+}
+
+/**
+ * @brief  处理接收完成的一帧数据
+ * @note   主循环调用，处理完后清除标志并重置索引
+ */
+void vProcessReceivedFrame(void)
+{
+    if (s_ucRxComplete == 0) return;
+
+    if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedOn) == 0)
+	{
+        vLed_On(LED0);
+        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
+		
+    } else if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedOff) == 0) 
+	{
+        vLed_Off(LED0);
+        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
+		
+    } else if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedTurn) == 0) 
+	{
+        vLed_Turn(LED0);
+        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
+    }
+
+    s_ucRxComplete = 0;
+    /* 不需要 memset，下次写入会覆盖 */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief 		执行函数函数待优化
@@ -137,11 +263,17 @@ void vMainMenuKeyHandler(void)
  */
 void vTask(void)
 {
-	if(emGetCurrentPage() == emMenu_Calculator)
-		vTest();						// 薄膜按键执行函数
-								
-    vBtnExecute();	   					// 先扫描物理按键
-    vMainMenuKeyHandler(); 				// 处理事件
+//	if(emGetCurrentPage() == emMenu_Calculator)
+//		vTest();						// 薄膜按键执行函数
+//								
+//    vBtnExecute();	   					// 先扫描物理按键
+//    vMainMenuKeyHandler(); 		s		// 处理事件
+//	
+//    vCurrentPageShow();           		// 显示当前页面
 	
-    vCurrentPageShow();           		// 显示当前页面
+	vUartFrameProcess();					// 
+    if (s_ucRxComplete) {
+        vProcessReceivedFrame();
+        s_ucRxComplete = 0;
+    }
 }

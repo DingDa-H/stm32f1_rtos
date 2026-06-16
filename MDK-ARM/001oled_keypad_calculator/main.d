@@ -25,14 +25,11 @@
 001oled_keypad_calculator\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 001oled_keypad_calculator\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 001oled_keypad_calculator\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+001oled_keypad_calculator\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 001oled_keypad_calculator\main.o: ../User/Device/oled_device.h
 001oled_keypad_calculator\main.o: ../User/Device/project.h
 001oled_keypad_calculator\main.o: ../User/APP/test.h
-001oled_keypad_calculator\main.o: ..\User\Ui\menu.h
-001oled_keypad_calculator\main.o: ..\User\Ui\ui_button.h
+001oled_keypad_calculator\main.o: ../User/Ui/menu.h
+001oled_keypad_calculator\main.o: ../User/Ui/ui_button.h
 001oled_keypad_calculator\main.o: ../User/Device/led_device.h
-001oled_keypad_calculator\main.o: ..\User\Ui\ui_text.h
 001oled_keypad_calculator\main.o: ../User/APP/task.h
-001oled_keypad_calculator\main.o: ../User/Device/keypad4_4.h
-001oled_keypad_calculator\main.o: ../User/Device/botton.h
-001oled_keypad_calculator\main.o: ..\User\Middle\button_mid.h

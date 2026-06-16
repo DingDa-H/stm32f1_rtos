@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <ui_text.h>
 	
-static uint8_t s_aucCalc[]     = "Calculator";			//计算器
+//static uint8_t s_aucCalc[]     = "Calculator";			//计算器
 
 static uint8_t s_aucLed[]  	   = "Led";					//Led
 static uint8_t s_aucSerial[]   = "Serial Test";			//串口

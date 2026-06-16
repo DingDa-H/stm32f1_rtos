@@ -52,7 +52,6 @@
 #include "project.h"
 #include "oled_device.h"
 #include "ui_button.h"
-#include "ui_text.h"
 #include "test.h"
 // ===================== 宏定义 =====================
 // 菜单一屏可见行数，和 menu.c 滚动逻辑对应

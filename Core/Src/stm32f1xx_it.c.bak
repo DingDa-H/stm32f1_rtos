@@ -211,7 +211,7 @@ void USART1_IRQHandler(void)
 	// 判断 USART1 接收非空中断标志 RXNE
     if( (USART1->SR & USART_SR_RXNE) != 0 )
     {
-		uint8_t ucData = (uint8_t)(USART1->DR & 0xFF);    /* 读 DR 清标志 */
+		uint8_t ucData = (uint8_t)(USART1->DR & 0xFF);   /* 读 DR 清标志 */
         ucWriteOnebyte(ucData);                           /* 只写，不管满不满 */
     }
 	return;

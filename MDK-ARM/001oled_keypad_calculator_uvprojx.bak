@@ -570,16 +570,6 @@
               <FileType>1</FileType>
               <FilePath>..\User\Device\botton.c</FilePath>
             </File>
-            <File>
-              <FileName>ring_buffer_device.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\User\Device\ring_buffer_device.c</FilePath>
-            </File>
-            <File>
-              <FileName>ring_buffer_device.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\User\Device\ring_buffer_device.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>

@@ -3,6 +3,7 @@
 #include "oled_device.h"
 #include <stdint.h>
 #include <menu.h>
+#include "ui_text.h"   // .c 文件内引入，仅当前编译单元生效，不会循环包含
 
 static emAllMenuTdf s_emCurrentPage = emMenu;
 
@@ -48,7 +49,7 @@ void vMenuInit(void)
  */
 void vMenuSelectDown(void)
 {	
-	uint8_t i,j = 0;
+	uint8_t i;
 	i = ucGetMenuSelectedIndex();
 	uint8_t ucCount = sizeof(s_astMenuLines) / sizeof(s_astMenuLines[0]);
 	
@@ -222,10 +223,19 @@ void vShowCalculatorMenu(void)
 //@note			
 void vShowLEDMenu(void)
 {
+	emAllMenuTdf page = emGetCurrentPage();
+	vShowSingleLineAll(page);				//显示led单行文本
 	vShowUibuttonTextAll();					//显示按钮
-	vShowSingleLineAll();					//显示单行文本
 	vShowNumberSelectorAll();				//显示数字选择器
 	vBtnScanAndExecute();				    //遍历所有回调函数
+}
+
+//@brief 		显示串口界面 
+//@note			
+void vShowSerialMenu(void)
+{
+	emAllMenuTdf page = emGetCurrentPage();
+	vShowSingleLineAll(page);				//显示led单行文本
 }
 
 /**
@@ -262,7 +272,8 @@ void vCurrentPageShow(void)
 		case emMenu_SnakeGame:		
             break;	
         
-		case emMenu_SerialTest:		
+		case emMenu_SerialTest:
+			vShowSerialMenu();          		// 显示串口界面
             break;
         
         default:

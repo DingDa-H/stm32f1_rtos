@@ -26,6 +26,7 @@
 001oled_keypad_calculator\oled_device.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 001oled_keypad_calculator\oled_device.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 001oled_keypad_calculator\oled_device.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+001oled_keypad_calculator\oled_device.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 001oled_keypad_calculator\oled_device.o: E:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 001oled_keypad_calculator\oled_device.o: E:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 001oled_keypad_calculator\oled_device.o: ..\User\Device\oled_font.h

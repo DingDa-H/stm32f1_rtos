@@ -25,4 +25,9 @@
 001oled_keypad_calculator\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 001oled_keypad_calculator\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 001oled_keypad_calculator\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+001oled_keypad_calculator\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 001oled_keypad_calculator\stm32f1xx_it.o: ../Core/Inc/stm32f1xx_it.h
+001oled_keypad_calculator\stm32f1xx_it.o: ../User/APP/task.h
+001oled_keypad_calculator\stm32f1xx_it.o: ../User/Device/project.h
+001oled_keypad_calculator\stm32f1xx_it.o: E:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+001oled_keypad_calculator\stm32f1xx_it.o: ../User/Device/ring_buffer_device.h

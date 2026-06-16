@@ -47,5 +47,8 @@
 #define OLED_BUFFER_WIDTH			OLED_POINT_WIDTH	//OLED一帧数据的行宽度，等于屏幕一行的像素数量
 #define OLED_BUFFER_HIGH			OLED_POINT_HIGH/8	//OLED一帧数据的列高度，等于屏幕一列的像素数量/8
 
+#define RX_BUF_SIZE 				50					//串口接收缓存大小
+#define RING_BUFFER_DEV_NUM 		1					//环形缓冲区设备数
+#define UART_RX_BUFFER 		emRingBufNum0		//环形缓冲区设备号
 
 #endif

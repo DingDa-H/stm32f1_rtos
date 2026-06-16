@@ -25,4 +25,5 @@
 001oled_keypad_calculator\keypad4_4.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 001oled_keypad_calculator\keypad4_4.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 001oled_keypad_calculator\keypad4_4.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+001oled_keypad_calculator\keypad4_4.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 001oled_keypad_calculator\keypad4_4.o: ..\User\Device\project.h
