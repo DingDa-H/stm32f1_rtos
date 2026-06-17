@@ -5,11 +5,20 @@ MDK-ARM/*/
 # 备份文件
 *.bak
 # 编译临时单文件
-*.crf *.d *.o *.hex *.axf *.map *.lnp *.htm *.build_log.htm *.lst *.dep
+*.crf *.d *.o *.hex *.axf *.map *.lnp *.htm *.build_log.htm *.dep
+# 全局匹配所有lst汇编列表文件
+**/*.lst
+# Keil 调试杂项
+*.tra
+*.plg
+ExtDll.iex
+*.sct
 
 # CubeMX杂项
 *.ioc.bak
 .cubemx
+
+# 系统、Git缓存文件
 Thumbs.db
 .DS_Store
 .gitignore.bak
