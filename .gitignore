@@ -1,14 +1,15 @@
-# MDK 编译产物、临时文件
-MDK-ARM/*/*.o
-MDK-ARM/*/*.d
-MDK-ARM/*/*.crf
-MDK-ARM/*/*.dep
-MDK-ARM/*/*.axf
-MDK-ARM/*/*.hex
-MDK-ARM/*/*.map
-MDK-ARM/*/*.htm
-MDK-ARM/*/*.lnp
-MDK-ARM/*/*.build_log.htm
-
-# MDK 本地界面配置（带用户名的临时文件）
+# MDK 编译输出目录（产物全在这个子文件夹，只忽略它）
+MDK-ARM/*/
+# 本地窗口缓存
 *.uvguix*
+# 备份文件
+*.bak
+# 编译临时单文件
+*.crf *.d *.o *.hex *.axf *.map *.lnp *.htm *.build_log.htm *.lst *.dep
+
+# CubeMX杂项
+*.ioc.bak
+.cubemx
+Thumbs.db
+.DS_Store
+.gitignore.bak
