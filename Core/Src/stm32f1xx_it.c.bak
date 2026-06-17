@@ -24,9 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include "ring_buffer_device.h"
-#include "ring_buffer_device.h"
-
-
+#include "project.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

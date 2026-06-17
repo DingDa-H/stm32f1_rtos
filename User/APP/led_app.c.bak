@@ -1,0 +1,233 @@
+/**
+ * @brief 		led相关应用层实现
+ * @param 		
+ * @data 		20260616
+ * @note 		尝试嵌入式分层架构，这是我将目前的部分代码发给ai让她帮我生成整理的
+ * @note 		尝试嵌入式分层架构，这是我将目前的部分代码发给ai让她帮我生成整理的
+ */
+
+
+/**
+ * @brief   LED 应用层：集中管理所有与 LED 相关的业务逻辑
+ *          - UI 按钮回调（开/关/翻转）
+ *          - 串口命令解释器回调（LED ON/OFF/TURN）
+ *          - 直接帧解析中的 LED 命令处理（由命令解释器接管后可废弃）
+ */
+
+#include "led_app.h"
+#include "string.h"
+#include <stdlib.h>   			// 提供 strtoul
+
+
+extern UART_HandleTypeDef huart1;
+const uint8_t c_aucAckLed_On[] 				= "LED On success\r\n";
+const uint8_t c_aucAckLed_Off[] 			= "LED Off success\r\n";
+const uint8_t c_aucAckLed_Turn[] 			= "LED Turn success\r\n";
+
+/* ========================== 静态函数声明 ========================== */
+static void s_vLedOnCallback(void *pCtx);
+static void s_vLedOffCallback(void *pCtx);
+static void s_vLedTurnCallback(void *pCtx);
+
+static void s_vCmdLedOn(char *pcParam);
+static void s_vCmdLedOff(char *pcParam);
+static void s_vCmdLedTurn(char *pcParam);
+
+/* ========================== LED 按钮定义 ========================== */
+// 按钮显示的字符串（从 ui_button.c 移过来）
+static uint8_t s_aucLedOn[]   = "On";
+static uint8_t s_aucLedOff[]  = "Off";
+static uint8_t s_aucLedTurn[] = "Turn";
+
+// LED 按钮控件实例（从 ui_button.c 移过来，回调指向本文件静态函数）
+static stUibuttonItemTdf s_stBtnLedOn = {
+    .x                     = 80,
+    .y                     = 25,
+    .ucData                = s_aucLedOn,
+    .emFontSize            = EM_FONT_SIZE,
+    .emSelectStatus        = emUibuttonSelectStatus_True,
+    .emUibutIsPressStatus  = emUibuttonIsPress_Flase,
+    .emButtonPressStatusLast = emUibuttonIsPress_Flase,
+    .uCnt                  = 0,
+    .uCntThreshold         = 20,
+    .vpfCallback           = s_vLedOnCallback,
+};
+
+static stUibuttonItemTdf s_stBtnLedOff = {
+    .x                     = 20,
+    .y                     = 25,
+    .ucData                = s_aucLedOff,
+    .emFontSize            = EM_FONT_SIZE,
+    .emSelectStatus        = emUibuttonSelectStatus_Flase,
+    .emUibutIsPressStatus  = emUibuttonIsPress_Flase,
+    .emButtonPressStatusLast = emUibuttonIsPress_Flase,
+    .uCnt                  = 0,
+    .uCntThreshold         = 20,
+    .vpfCallback           = s_vLedOffCallback,
+};
+
+static stUibuttonItemTdf s_stBtnLedTurn = {
+    .x                     = 20,
+    .y                     = 45,
+    .ucData                = s_aucLedTurn,
+    .emFontSize            = EM_FONT_SIZE,
+    .emSelectStatus        = emUibuttonSelectStatus_Flase,
+    .emUibutIsPressStatus  = emUibuttonIsPress_Flase,
+    .emButtonPressStatusLast = emUibuttonIsPress_Flase,
+    .uCnt                  = 0,
+    .uCntThreshold         = 20,
+    .vpfCallback           = s_vLedTurnCallback,
+};
+
+// 子菜单按钮控件 结构体指针数组（外部可用）
+stUibuttonItemTdf *const s_astLedButtons[] = {
+    &s_stBtnLedOn,
+    &s_stBtnLedOff,
+    &s_stBtnLedTurn,
+};
+const uint8_t s_ucLedButtonCount = sizeof(s_astLedButtons) / sizeof(s_astLedButtons[0]);
+
+/* ========================== UI 按钮回调实现 ========================== */
+static void s_vLedOnCallback(void *pCtx)
+{
+    (void)pCtx;
+    vLed_On(LED0);
+}
+
+static void s_vLedOffCallback(void *pCtx)
+{
+    (void)pCtx;
+    vLed_Off(LED0);
+}
+
+static void s_vLedTurnCallback(void *pCtx)
+{
+    (void)pCtx;
+    vLed_Turn(LED0);
+}
+
+/* ========================== 命令解释器回调实现 ========================== */
+/* 发送固定字符串的辅助函数（可选，减少重复代码） */
+static void s_vUartSendString(const uint8_t *pucStr)
+{
+    if (pucStr != NULL) {
+        HAL_UART_Transmit(&huart1, (uint8_t *)pucStr, (uint16_t)strlen((const char *)pucStr), 100);
+    }
+}
+/**
+ * @brief 		回调函数		
+ * @note 		这是没有打印信息的简化版本
+ */
+//static void s_vCmdLedOn(char *pcParam)
+//{
+//    if (pcParam == NULL) return;
+
+//    char *pcEndPtr = NULL;
+//    unsigned long ulValue = strtoul(pcParam, &pcEndPtr, 10);
+//    if (pcEndPtr == pcParam || *pcEndPtr != '\0') return;
+
+//    uint8_t ucIndex = (uint8_t)ulValue;
+//    if (ucIndex >= LED_NUM) return;
+
+//    vLed_On((emLedDevNumTdf)ucIndex);
+//}
+
+static void s_vCmdLedOn(char *pcParam)
+{
+    if (pcParam == NULL) {
+        s_vUartSendString((const uint8_t *)"Error: missing parameter\r\n");
+        return;
+    }
+    char *pcEndPtr = NULL;
+    unsigned long ulValue = strtoul(pcParam, &pcEndPtr, 10);
+    if (pcEndPtr == pcParam || *pcEndPtr != '\0') {
+        s_vUartSendString((const uint8_t *)"Error: invalid parameter\r\n");
+        return;
+    }
+    uint8_t ucIndex = (uint8_t)ulValue;
+    if (ucIndex >= LED_NUM) {
+        s_vUartSendString((const uint8_t *)"Error: LED index out of range\r\n");
+        return;
+    }
+    vLed_On((emLedDevNumTdf)ucIndex);
+    HAL_UART_Transmit(&huart1, (uint8_t *)c_aucAckLed_On, sizeof(c_aucAckLed_On) - 1, 100);
+}
+
+static void s_vCmdLedOff(char *pcParam)
+{
+    if (pcParam == NULL) {
+        s_vUartSendString((const uint8_t *)"Error: missing parameter\r\n");
+        return;
+    }
+    char *pcEndPtr = NULL;
+    unsigned long ulValue = strtoul(pcParam, &pcEndPtr, 10);
+    if (pcEndPtr == pcParam || *pcEndPtr != '\0') {
+        s_vUartSendString((const uint8_t *)"Error: invalid parameter\r\n");
+        return;
+    }
+    uint8_t ucIndex = (uint8_t)ulValue;
+    if (ucIndex >= LED_NUM) {
+        s_vUartSendString((const uint8_t *)"Error: LED index out of range\r\n");
+        return;
+    }
+    vLed_Off((emLedDevNumTdf)ucIndex);
+    HAL_UART_Transmit(&huart1, (uint8_t *)c_aucAckLed_Off, sizeof(c_aucAckLed_Off) - 1, 100);
+}
+
+static void s_vCmdLedTurn(char *pcParam)
+{
+    if (pcParam == NULL) {
+        s_vUartSendString((const uint8_t *)"Error: missing parameter\r\n");
+        return;
+    }
+    char *pcEndPtr = NULL;
+    unsigned long ulValue = strtoul(pcParam, &pcEndPtr, 10);
+    if (pcEndPtr == pcParam || *pcEndPtr != '\0') {
+        s_vUartSendString((const uint8_t *)"Error: invalid parameter\r\n");
+        return;
+    }
+    uint8_t ucIndex = (uint8_t)ulValue;
+    if (ucIndex >= LED_NUM) {
+        s_vUartSendString((const uint8_t *)"Error: LED index out of range\r\n");
+        return;
+    }
+    vLed_Turn((emLedDevNumTdf)ucIndex);
+    HAL_UART_Transmit(&huart1, (uint8_t *)c_aucAckLed_Turn, sizeof(c_aucAckLed_Turn) - 1, 100);
+}
+
+
+/* ========================== LED 命令注册表 ========================== */
+static const stInterpreterTdf s_astLedCmdTable[] = {
+    { .c_pcObject = "LED", .c_pcCmd = "ON",   .c_pcParamNum = 1, .pvfCallBack = s_vCmdLedOn },
+    { .c_pcObject = "LED", .c_pcCmd = "OFF",  .c_pcParamNum = 1, .pvfCallBack = s_vCmdLedOff },
+    { .c_pcObject = "LED", .c_pcCmd = "TURN", .c_pcParamNum = 1, .pvfCallBack = s_vCmdLedTurn },
+};
+
+/* ========================== 外部接口 ========================== */
+/**
+ * @brief   LED 应用层初始化
+ * @note    可在此处完成按钮状态、命令注册等。当前按钮已静态初始化完成。
+ */
+void vLedAppInit(void)
+{
+    // 若将来需要动态调整，可在此处操作
+}
+
+/**
+ * @brief   将 LED 命令表注册到命令解释器（或供外部调用）
+ * @note    示例：外部可调用此函数将 LED 命令加入全局命令表
+ * @note    其他需要注册命令的应用层也需要这类函数
+ */
+void vLedAppRegisterCommands(void)
+{
+    /* 直接将 LED 命令表注册到解释器 */
+    vInterpreterRegisterCmdTable(s_astLedCmdTable,
+        sizeof(s_astLedCmdTable) / sizeof(s_astLedCmdTable[0]));
+}
+
+/* ========================== 废弃的直接帧处理（已由命令解释器替代） ========================== */
+/*
+ * 原来的 task.c 中 vProcessReceivedFrame 直接 strcmp 字符串控制 LED，
+ * 这部分现在应该通过命令解释器统一处理（分词 -> 查表 -> 回调），
+ * 因此不再需要重复的 if-else 判断，可删除或改造为解释器入口。
+ */

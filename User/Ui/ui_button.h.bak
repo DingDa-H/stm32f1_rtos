@@ -1,0 +1,117 @@
+/**
+ * @brief 		ui按钮控件实现
+ * @version 	DingDa-H	
+ * @data 		20260608	
+ * @note 		........
+ */
+#ifndef __UI_BUTTON_H
+#define __UI_BUTTON_H
+
+#include "stm32f1xx_hal.h"
+#include "project.h"
+
+
+/**
+ * @brief 		按钮是否被选中
+ * @param 	
+ * @data 			
+ * @note 		
+ */
+typedef enum
+{
+    emUibuttonSelectStatus_Flase     = 0,                       // 0 未选中
+    emUibuttonSelectStatus_True   	 = 1,                       // 1 选中
+}
+emUibuttonSelectStatusTdf;
+/**
+ * @brief 		按钮是否被按钮
+ * @note 		
+ */
+typedef enum
+{
+    emUibuttonIsPress_Flase    		 = 0,                       // 0 未被点击
+    emUibuttonIsPress_True   		 = 1,                       // 1 被点击
+}
+emUibuttonIsPressTdf;
+
+/**
+ * @brief 		按钮是否被触发
+ * @note 		软件认为用户完成了一次有意义的操作。
+ * @note		比如“单击（短按后松开）”、“长按（按住超过1秒）”、“双击（短时间内连续按两次）”。
+*/
+typedef enum
+{
+    emUibuttonTriggerStu_Flase    	 = 0,                       // 0 未被触发
+    emUibuttonTriggerStu_True   	 = 1,                       // 1 被触发	
+}
+emUibuttonTriggerStuTdf;
+/**
+ * @brief 		按钮回调用函数
+ * @note 		
+ */
+typedef void vfButtonCallbackTdf(void *pCtx);
+
+/**
+ * @brief 		ui按钮数据结构
+ * @param 		
+ * @data 			
+ * @note 		
+ */
+typedef struct
+{
+	uint32_t 					x;							//起始x坐标
+	uint32_t					y;							//起始y坐标
+	uint8_t 					*ucData;					//要显示的字符串
+	emOledFontSizeTdf			emFontSize;					//字号大小
+	emUibuttonSelectStatusTdf	emSelectStatus;				//选中状态
+	emUibuttonIsPressTdf		emUibutIsPressStatus;		//当前按钮是否被按下
+	emUibuttonIsPressTdf		emButtonPressStatusLast;	//上次按钮是否被按下
+	uint16_t					uCnt;						//按钮计数
+	uint16_t					uCntThreshold;				//按钮计数周期
+	vfButtonCallbackTdf			*vpfCallback;				//按钮回调函数指针
+}
+stUibuttonItemTdf;
+
+/**
+ * @brief 		数字选择器数据结构
+ * @note 		用于显示和操作'LED0'里面的'0'按钮
+ */
+typedef struct
+{
+	uint32_t 						x;							//起始x坐标
+	uint32_t						y;							//起始y坐标
+	uint8_t 						ucValue;					//当前值(也是要显示的值)
+	emOledFontSizeTdf				emFontSize;					//字号大小
+	emUibuttonSelectStatusTdf		emSelectStatus;				//选中状态
+	emUibuttonIsPressTdf			emNumberbutIsPressStatus;	//当前按钮是否被按下
+	emUibuttonIsPressTdf			emNumberPressStatusLast;	//上次按钮是否被按下
+	uint16_t						uCnt;						//按钮计数
+	uint16_t						uCntThreshold;				//按钮计数周期
+	uint8_t  						ucMin;          			// 最小值
+    uint8_t 						ucMax;          			// 最大值
+	vfButtonCallbackTdf				*vpfCallback;				//按钮回调函数指针
+}
+stNumberSelectorTdf;
+//typedef struct {
+//    uint8_t  ucValue;        // 当前值（比如 0~4）
+//    uint8_t  ucMin;          // 最小值
+//    uint8_t  ucMax;          // 最大值
+//    uint8_t  ucX;            // 显示位置 X
+//    uint8_t  ucY;            // 显示位置 Y
+//    void   (*vOnChange)(void *pCtx);  // 值改变时的回调（可选）
+//    void    *pCtx;           // 回调上下文指针
+//} 
+//stNumberSelectorTdf;
+
+void vShowUibuttonTextAll(void);
+void vShowNumberSelectorAll(void);
+
+void vUibuttonSelectDown(void);
+void vUibuttonSelectUp(void);
+void vUibuttonEnter(void);
+void vUibuttonCancel(void);
+
+void vBtnScanAndExecute(void);
+
+
+#endif

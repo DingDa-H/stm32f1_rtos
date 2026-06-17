@@ -1,5 +1,5 @@
-#ifndef __INTERPRETER_DEVICE_H
-#define __INTERPRETER_DEVICE_H
+#ifndef __INTERPRETER_APP_H
+#define __INTERPRETER_APP_H
 
 
 #include "project.h"
@@ -8,7 +8,7 @@
 /*	回调函数定义（参数待完善）
  *
  */
-typedef void vfCmdInterpreterCallbackTdf(char *string);
+typedef void vfCmdInterpreterCallbackTdf(void);
 /**
  * @brief 		缓冲区设备数量枚举
  * @param 	
@@ -26,7 +26,7 @@ emInterpreterNumTdf;
 
 /**
  * @brief 		解释器数据结构
-* @note 		未拓展，实际应该可以根据参数实现对应功能，例如led闪烁或者呼吸
+ * @note 		
  */
 typedef struct {
     const char  						*c_pcObject;   					// 对象："LED"、"DHT11"、"TIMER"……
@@ -36,8 +36,6 @@ typedef struct {
     vfCmdInterpreterCallbackTdf 		*pvfCallBack;					// 回调函数
 } stInterpreterTdf;
 
-uint8_t ucFenCi(char *pcString, char *apsTokens[], uint8_t ucMaxTokens);
-void vBianliCmdList(char *apsTokens[]);
-void vInterpreterRegisterCmdTable(const stInterpreterTdf *pCmdTable, uint8_t ucTableSize);
-void vInterpreterInit(void);
+
+
 #endif

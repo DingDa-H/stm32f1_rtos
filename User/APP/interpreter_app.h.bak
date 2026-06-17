@@ -1,0 +1,98 @@
+/**
+ * @brief 		串口收发优化，命令解释器的应用层实现
+ * @param 		
+ * @data 		20260616
+ * @note 		尝试嵌入式分层架构
+ */
+#include "stm32f1xx_hal.h"
+#include <string.h>
+#include "interpreter_app.h"
+
+
+void vCmdLedOn(void);
+void vCmdLedOff(void);
+void vCmdCalculatorstart(void);
+
+//在 C 语言的 static 结构体数组中，未显式赋值的成员会被自动初始化为 0 或 NULL
+//这里忽略了c_pcParam
+static stInterpreterTdf s_stInterpreter[] = 
+{
+	{ .c_pcObject = "LED", .c_pcCmd = "ON",  .c_pcParamNum = 1, .pvfCallBack = vCmdLedOn  },
+	{ .c_pcObject = "LED", .c_pcCmd = "OFF", .c_pcParamNum = 1, .pvfCallBack = vCmdLedOff },
+	{ .c_pcObject = "CALCULATOR", .c_pcCmd = "STAR", .c_pcParamNum = 0, .pvfCallBack = vCmdCalculatorstart },
+};
+
+static char *argv[10];                      					// 指针数组，最多存放 10 个 token
+
+void vCmdLedOn()
+{
+	;
+}
+
+void vCmdLedOff()
+{
+	;
+}
+
+void vCmdCalculatorstart()
+{
+	;
+}
+/**
+ * @brief 		分词函数
+* @param 		pcString:字符串首地址
+ * @note 		将传入的字符串按照" \r\n"分割开，后分段存入指针数组里
+ */
+void vFen_Ci(char *pcString)
+{
+	
+	char *pBuf = pcString;										// 创建临时变量存传过来的参数
+	char *token;												// 用来存返回值
+	uint8_t ucIndex = 0;										// 数组索引
+	
+    // 第一次调用，传入原始字符串							
+    token = strtok(pBuf, " \r\n");   							// 分隔符：空格
+	while (token != NULL && ucIndex < 10) {							
+        argv[ucIndex++] = token;         						// 存储指针
+		token = strtok(NULL, " \r\n");          				// 继续分割
+    }
+	while (ucIndex < 10) {							
+        argv[ucIndex++] = NULL;         						// 其余字段设置为空
+    }
+}
+
+/**
+ * @brief 		遍历命令函数
+ * @param 		**pcString,指向指针的指针-----》指针数组
+ * @retval 		void
+ * @note 		遍历命令表，匹配设备+指令后执行对应回调函数
+ */
+
+void vBianliCmdList(char **pc2String)
+{
+	uint8_t i;
+	uint8_t ucTableCnt = sizeof(s_stInterpreter) / sizeof(s_stInterpreter[0]);
+
+	// 容错：无有效分词直接退出
+	if (pc2String == NULL || pc2String[0] == NULL || pc2String[1] == NULL)
+	{
+		return;
+	}
+
+	for(i = 0; i < ucTableCnt; i++)
+    {
+		// 匹配设备名 + 指令名
+		if (strcmp(s_stInterpreter[i].c_pcObject, pc2String[0]) == 0)
+		{
+			if (strcmp(s_stInterpreter[i].c_pcCmd, pc2String[1]) == 0)
+			{
+				// 找到匹配指令，执行回调
+				if(s_stInterpreter[i].pvfCallBack != NULL)
+				{
+					s_stInterpreter[i].pvfCallBack();
+				}
+				break; // 匹配到直接跳出循环，不用继续遍历
+			}
+		}
+    }
+}

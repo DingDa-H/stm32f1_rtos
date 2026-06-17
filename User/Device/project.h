@@ -51,4 +51,6 @@
 #define RING_BUFFER_DEV_NUM 		1					//环形缓冲区设备数
 #define UART_RX_BUFFER 				emRingBufNum0		//环形缓冲区设备号
 
+
+#define INTERPRETER_CMD_MAX_NUM     20					/* 全局命令表最大容量（根据项目需要调整） */
 #endif

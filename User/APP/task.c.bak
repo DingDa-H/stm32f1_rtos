@@ -8,8 +8,13 @@
 #include "menu.h"
 #include "test.h"
 #include "ring_buffer_device.h"
+#include "interpreter_device.h"
+#include "led_app.h"
 
 #include "task.h"
+
+
+static char *s_apsArgv[10];   // 分词结果指针数组
 
 /**
  * @brief 		LED初始化
@@ -23,7 +28,21 @@ void Led_Init(void)
 	stLedInit.emLedLevel					= emLedActiveLevel_Low;
 	stLedInit.pstGpioBase					= GPIOC;
 	stLedInit.usGpioPin						= GPIO_PIN_13;
+	vLedParamInit(&stLedInit,LED0);
 	
+	stLedInit.emLedLevel					= emLedActiveLevel_Low;
+	stLedInit.pstGpioBase					= GPIOB;
+	stLedInit.usGpioPin						= GPIO_PIN_0;
+	vLedParamInit(&stLedInit,LED0);
+	
+	stLedInit.emLedLevel					= emLedActiveLevel_Low;
+	stLedInit.pstGpioBase					= GPIOB;
+	stLedInit.usGpioPin						= GPIO_PIN_10;
+	vLedParamInit(&stLedInit,LED0);
+	
+	stLedInit.emLedLevel					= emLedActiveLevel_High;
+	stLedInit.pstGpioBase					= GPIOA;
+	stLedInit.usGpioPin						= GPIO_PIN_15;
 	vLedParamInit(&stLedInit,LED0);
 }
 
@@ -163,9 +182,11 @@ static uint8_t s_ucFrameIndex;
 //接收标志位
 uint8_t s_ucRxComplete = 0;
 
-const uint8_t c_aucCmdLedOn[]    		= "LED0 On\r\n";				//led控制
-const uint8_t c_aucCmdLedOff[]    		= "LED0 Off\r\n";				//led控制
-const uint8_t c_aucCmdLedTurn[]    		= "LED0 Turn\r\n";				//led控制
+const uint8_t c_aucCmdLedOn[]    		= "LED On 0\r\n";				//led控制
+const uint8_t c_aucCmdLedOff[]    		= "LED Off 0\r\n";				//led控制
+const uint8_t c_aucCmdLedTurn[]    		= "LED Turn 0\r\n";				//led控制
+const uint8_t c_aucCmdCalculator[]    	= "CULATOE STAR\r\n";			//打开计算器
+
 
 const uint8_t c_aucAckLed[] 			= "LED success\r\n";
 extern UART_HandleTypeDef huart1;
@@ -178,7 +199,7 @@ extern UART_HandleTypeDef huart1;
 void vUartFrameProcess(void)
 {
     uint8_t ucCh;
-    while (ucReadOnebyte(&ucCh) == 0) {       /* 环形缓冲区有数据 */
+    while (ucReadOnebyte(&ucCh,UART_RX_BUFFER) == 0) {       /* 环形缓冲区有数据 */
         if (ucCh == '\n') 
 		{
             if (s_ucFrameIndex < RX_BUF_SIZE - 1)
@@ -205,33 +226,33 @@ void vUartFrameProcess(void)
 		
 }
 
-/**
- * @brief  处理接收完成的一帧数据
- * @note   主循环调用，处理完后清除标志并重置索引
- */
-void vProcessReceivedFrame(void)
-{
-    if (s_ucRxComplete == 0) return;
+///**
+// * @brief  处理接收完成的一帧数据
+// * @note   主循环调用，处理完后清除标志并重置索引
+// */
+//void vProcessReceivedFrame(void)
+//{
+//    if (s_ucRxComplete == 0) return;
 
-    if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedOn) == 0)
-	{
-        vLed_On(LED0);
-        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
-		
-    } else if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedOff) == 0) 
-	{
-        vLed_Off(LED0);
-        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
-		
-    } else if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedTurn) == 0) 
-	{
-        vLed_Turn(LED0);
-        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
-    }
+//    if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedOn) == 0)
+//	{
+//        vLed_On(LED0);
+//        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
+//		
+//    } else if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedOff) == 0) 
+//	{
+//        vLed_Off(LED0);
+//        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
+//		
+//    } else if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedTurn) == 0) 
+//	{
+//        vLed_Turn(LED0);
+//        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
+//    }
 
-    s_ucRxComplete = 0;
-    /* 不需要 memset，下次写入会覆盖 */
-}
+//    s_ucRxComplete = 0;
+//    /* 不需要 memset，下次写入会覆盖 */
+//}
 
 
 
@@ -264,16 +285,32 @@ void vProcessReceivedFrame(void)
 void vTask(void)
 {
 //	if(emGetCurrentPage() == emMenu_Calculator)
-//		vTest();						// 薄膜按键执行函数
+//		vTest();							// 薄膜按键执行函数
 //								
 //    vBtnExecute();	   					// 先扫描物理按键
 //    vMainMenuKeyHandler(); 		s		// 处理事件
 //	
 //    vCurrentPageShow();           		// 显示当前页面
 	
-	vUartFrameProcess();					// 
+//	vUartFrameProcess();					// 
+//    if (s_ucRxComplete) {
+//        vProcessReceivedFrame();
+//        s_ucRxComplete = 0;
+//    }
+	// 1. 系统启动时初始化解释器
+	vInterpreterInit();
+
+	// 2. 各应用层注册自己的命令
+	vLedAppRegisterCommands();
+//	vCalcAppRegisterCommands();   // 如果你有计算器应用层
+	vUartFrameProcess();
     if (s_ucRxComplete) {
-        vProcessReceivedFrame();
+        /* 1. 分词 */
+        uint8_t ucTokenCount = ucFenCi((char *)s_aucFrameBuf, s_apsArgv, 10);
+        
+        /* 2. 查表 + 3. 回调（使用全局注册的命令表） */
+        vBianliCmdList(s_apsArgv);
+        
         s_ucRxComplete = 0;
     }
 }

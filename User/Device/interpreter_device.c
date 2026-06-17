@@ -1,65 +1,139 @@
-///**
-// * @brief 		串口收发优化，环形缓冲区的实现
-// * @param 		
-// * @data 		20260611
-// * @note 		不是自己想出来的，我只是知道有这个东西，不过我要自己独立实现
-// */
-//#include "stm32f1xx_hal.h"
-//#include "string.h"
-//#include "ring_buffer_device.h"
+/**
+ * @brief 		串口收发优化，命令解释器的实现
+ * @param 		
+ * @data 		20260616
+ * @note 		不是自己想出来的，我只是知道有这个东西，不过我要自己独立实现
+ * @note 		另外这个命令解释器驱动似乎应该放在中间件里面，对于小型项目也可以放在这里
+ * @note 		20260617这里我用ai做了部分优化，主要是函数传参部分
+ * @note 		20260617这里我用ai做了部分优化，主要为适配新增加的应用层框架，添加了清空和注册命令表函数
+ */
+/**
+ * @brief   命令解释器中间件（可动态注册命令）
+ *          所有业务命令通过注册函数加入，解释器不包含任何具体硬件操作
+ */
+#include "stm32f1xx_hal.h"
+#include <string.h>
+#include "interpreter_device.h"
+
+/* ==================== 内部静态全局命令表 ==================== */
+static stInterpreterTdf s_astGlobalCmdTable[INTERPRETER_CMD_MAX_NUM];
+static uint8_t        s_ucCmdCount = 0;   /* 当前已注册的命令条数 */
+
+/**
+ * @brief   清空命令表，通常在系统初始化时调用一次
+ */
+void vInterpreterInit(void)
+{
+    s_ucCmdCount = 0;
+    /* 可选：memset(s_astGlobalCmdTable, 0, sizeof(s_astGlobalCmdTable)); */
+}
+
+/**
+ * @brief   将外部命令表注册到内部全局表
+ * @param   pCmdTable   源命令表（数组首地址）
+ * @param   ucTableSize 源表条目数
+ * @note    超出最大容量时，多余部分会被丢弃
+ */
+void vInterpreterRegisterCmdTable(const stInterpreterTdf *pCmdTable, uint8_t ucTableSize)
+{
+    uint8_t i;
+
+    if (pCmdTable == NULL || ucTableSize == 0) {
+        return;
+    }
+
+    for (i = 0; i < ucTableSize; i++) {
+        if (s_ucCmdCount >= INTERPRETER_CMD_MAX_NUM) {
+            break;   /* 表满，不再注册 */
+        }
+        /* 逐条拷贝结构体 */
+        s_astGlobalCmdTable[s_ucCmdCount] = pCmdTable[i];
+        s_ucCmdCount++;
+    }
+}
+
+/**
+ * @brief   字符串分词函数
+ * @param   pcString      待分割的原始字符串（会被 strtok 修改）
+ * @param   apsTokens     存放 token 指针的数组
+ * @param   ucMaxTokens   最多存储的 token 数量
+ * @retval  实际分割出的 token 个数
+ */
+uint8_t ucFenCi(char *pcString, char *apsTokens[], uint8_t ucMaxTokens)
+{
+    uint8_t ucIndex = 0;
+    char *token;
+
+    if (pcString == NULL || apsTokens == NULL || ucMaxTokens == 0) {
+        return 0;
+    }
+
+    token = strtok(pcString, " \r\n");
+    while (token != NULL && ucIndex < ucMaxTokens) {
+        apsTokens[ucIndex++] = token;
+        token = strtok(NULL, " \r\n");
+    }
+
+    /* 剩余位置置为 NULL（便于调用方判断结束） */
+    while (ucIndex < ucMaxTokens) {
+        apsTokens[ucIndex++] = NULL;
+    }
+
+    return (uint8_t)(ucIndex > 0 ? ucIndex - 1 : 0);  /* 返回最后一个有效 token 的索引 */
+}
+
+/**
+ * @brief   遍历内部全局命令表，匹配对象+命令并执行回调
+ * @param   apsTokens  分词后的 token 数组（至少两个有效 token）
+ */
+void vBianliCmdList(char *apsTokens[])
+{
+    uint8_t i;
+
+    if (apsTokens == NULL || apsTokens[0] == NULL || apsTokens[1] == NULL) {
+        return;
+    }
+
+    for (i = 0; i < s_ucCmdCount; i++) {
+        if (strcmp(s_astGlobalCmdTable[i].c_pcObject, apsTokens[0]) == 0 &&
+            strcmp(s_astGlobalCmdTable[i].c_pcCmd, apsTokens[1]) == 0) {
+            if (s_astGlobalCmdTable[i].pvfCallBack != NULL) {
+				
+                s_astGlobalCmdTable[i].pvfCallBack(apsTokens[2]);
+            }
+            break;
+        }
+    }
+}
 
 
-//static stRingBufTdf s_stRingBuf[RING_BUFFER_DEV_NUM];
-
-///// @brief      环形缓冲区参数初始化
-/////
-///// @note
-//void vRingBufParamCopy(stRingBufTdf *pststaticInit,emRingBufNumTdf emDevNum)
+/**
+ * @brief   遍历命令表，匹配对象+命令并执行回调
+ * @param   apsTokens     分词后的 token 数组（至少两个有效 token）
+ * @param   pCmdTable     命令查找表
+ * @param   ucTableSize   命令表条目数
+ * @note    匹配成功则执行回调并立即返回，不继续遍历
+ */
+//void vBianliCmdList(char *apsTokens[], 
+//                    const stInterpreterTdf *pCmdTable, 
+//                    uint8_t ucTableSize)
 //{
-//	if(NULL == pststaticInit)
-//	{
-//		return;
-//	}
-//	memcpy(&s_stRingBuf[emDevNum],pststaticInit,sizeof(stRingBufTdf)/sizeof(uint8_t));
-//}
-///**
-// * @brief 		写入一个字节
-// * @param 	
-// * @rev 		0-成功	1-失败
-// * @note 		向缓冲区写入字节
-// */
-//uint8_t ucWriteOnebyte(uint8_t byte)
-//{
-//	if(s_stRingBuf.ucCount >= RX_BUF_SIZE)
-//	{
-//		return 1;
-//	}
-//	
-//	s_stRingBuf.aucBuf[s_stRingBuf.ucWrite ++] = byte;
-//	if(s_stRingBuf.ucWrite >= RX_BUF_SIZE)
-//	{
-//		s_stRingBuf.ucWrite = 0;
-//	}
-//	s_stRingBuf.ucCount++;
-//	return 0;
-//}
+//    uint8_t i;
 
-///**
-// * @brief 		读取一个字节
-// * @param 		aucRxBuf：缓冲区数组
-// * @rev 		0-成功	1-失败
-// * @note 		从缓冲区读取字节
-// */
-//uint8_t ucReadOnebyte(uint8_t *pucByte)
-//{
-//	if (s_stRingBuf.ucCount == 0)   // 空，无数据可读
-//    return 1;
+//    /* 容错：无效输入直接退出 */
+//    if (apsTokens == NULL || apsTokens[0] == NULL || apsTokens[1] == NULL ||
+//        pCmdTable == NULL || ucTableSize == 0) {
+//        return;
+//    }
 
-//	*pucByte = s_stRingBuf.aucBuf[s_stRingBuf.ucRead ++];
-//	if (s_stRingBuf.ucRead >= RX_BUF_SIZE) 
-//	{
-//		s_stRingBuf.ucRead = 0;
-//	}
-//	s_stRingBuf.ucCount--;
-//	return 0;
+//    for (i = 0; i < ucTableSize; i++) {
+//        if (strcmp(pCmdTable[i].c_pcObject, apsTokens[0]) == 0 &&
+//            strcmp(pCmdTable[i].c_pcCmd, apsTokens[1]) == 0) {
+//            /* 找到匹配命令，执行回调 */
+//            if (pCmdTable[i].pvfCallBack != NULL) {
+//                pCmdTable[i].pvfCallBack();
+//            }
+//            break;   /* 匹配后立即退出 */
+//        }
+//    }
 //}

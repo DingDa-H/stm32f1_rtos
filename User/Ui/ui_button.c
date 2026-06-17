@@ -9,6 +9,7 @@
 #include "string.h"
 #include <stdint.h>
 #include <ui_button.h>
+
 //	.x			= 64 - (sizeof(s_aucLed0) / sizeof(s_aucLed0[0]) - 1) / 2 * EM_FONT_SIZE / 2,
 
 uint8_t ucGetUibuttonSelectedIndex(void);
