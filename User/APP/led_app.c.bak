@@ -117,6 +117,7 @@ static void s_vUartSendString(const uint8_t *pucStr)
 /**
  * @brief 		回调函数		
  * @note 		这是没有打印信息的简化版本
+ * @note 		strtoul 是 C 标准库中的一个字符串转换函数，专门用于将字符串转换为 无符号长整型数
  */
 //static void s_vCmdLedOn(char *pcParam)
 //{
@@ -211,6 +212,7 @@ static const stInterpreterTdf s_astLedCmdTable[] = {
 void vLedAppInit(void)
 {
     // 若将来需要动态调整，可在此处操作
+	vUibuttonInit(s_astLedButtons, s_ucLedButtonCount);		//让应用层把 LED-ui按钮数组“交”给 UI 模块
 }
 
 /**

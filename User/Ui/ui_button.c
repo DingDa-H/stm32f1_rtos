@@ -13,21 +13,17 @@
 //	.x			= 64 - (sizeof(s_aucLed0) / sizeof(s_aucLed0[0]) - 1) / 2 * EM_FONT_SIZE / 2,
 
 uint8_t ucGetUibuttonSelectedIndex(void);
-void vButtonCallback_On(void *pCtx);
-void vButtonCallback_Off(void *pCtx);
-void vButtonCallback_Turn(void *pCtx);
 
-static uint8_t s_ucWindowStart = 0;  					// 当前显示窗口第一行在数组中的索引
+static uint8_t s_ucWindowStart 					= 0;  				// 当前显示窗口第一行在数组中的索引
+// 修改后，和形参类型完全对齐
+static stUibuttonItemTdf *const *s_apsCurrentButtons = NULL;		// 用来接收led_app的按钮实例指针数组
+static uint8_t s_ucCurrentButtonCount 			= 0;				// 当前按钮数量
 	
 //static uint8_t s_aucCalc[]   = "1.Calculator";			//计算器
 //static uint8_t s_aucLed[]    = "2.LED Control";			//led控制
 //static uint8_t s_aucSnake[]  = "3.Snake Game";			//贪吃蛇
 //static uint8_t s_aucSerial[] = "4.Serial Test";			//串口收发
 
-
-static uint8_t s_aucLedOn[]    		= "On";					//LedOn
-static uint8_t s_aucLedOff[]  	 	= "Off";				//LedOff
-static uint8_t s_aucLedTurn[]   	= "Turn";				//LedTurn
 
 static uint8_t s_aucLed[]  			= "Led";				//Led
 
@@ -52,60 +48,6 @@ static stNumberSelectorTdf s_stNumberSelector =
 	.vpfCallback				= 0,
 };
 
-/**
- * @brief 		[LedOn按钮控件]
- * @version 	
- * @data 			
- * @note 		按钮控件初始化
- */
-static stUibuttonItemTdf s_stUibutton_Led_On = 
-{
-	.x							= 80,
-	.y							= 25,
-	.ucData						= s_aucLedOn,
-	.emFontSize 				= EM_FONT_SIZE,
-	.emSelectStatus				= emUibuttonSelectStatus_True,
-	.emUibutIsPressStatus		= emUibuttonIsPress_Flase,
-	.emButtonPressStatusLast	= emUibuttonIsPress_Flase,
-	.uCnt						= 0,
-	.uCntThreshold				= 20,
-	.vpfCallback				= vButtonCallback_On,
-};
-
-static stUibuttonItemTdf s_stUibutton_Led_Off = 
-{
-	.x							= 20,
-	.y							= 25,
-	.ucData						= s_aucLedOff,
-	.emFontSize 				= EM_FONT_SIZE,
-	.emSelectStatus				= emUibuttonSelectStatus_Flase,
-	.emUibutIsPressStatus		= emUibuttonIsPress_Flase,
-	.emButtonPressStatusLast	= emUibuttonIsPress_Flase,
-	.uCnt						= 0,
-	.uCntThreshold				= 20,
-	.vpfCallback				= vButtonCallback_Off,
-};
-
-static stUibuttonItemTdf s_stUibutton_Led_Turn = 
-{
-	.x							= 20,
-	.y							= 45,
-	.ucData						= s_aucLedTurn,
-	.emFontSize 				= EM_FONT_SIZE,
-	.emSelectStatus				= emUibuttonSelectStatus_Flase,
-	.emUibutIsPressStatus		= emUibuttonIsPress_Flase,
-	.emButtonPressStatusLast	= emUibuttonIsPress_Flase,
-	.uCnt						= 0,
-	.uCntThreshold				= 20,
-	.vpfCallback				= vButtonCallback_Turn,
-};
-
-// 子菜单按钮控件 结构体指针数组
-static stUibuttonItemTdf *s_astUibuttons[] = {
-	&s_stUibutton_Led_On,
-	&s_stUibutton_Led_Off,
-	&s_stUibutton_Led_Turn,
-};
 
 /**
  * @brief 		实现按钮反色显示后恢复
@@ -156,48 +98,32 @@ emUibuttonTriggerStuTdf emUibuttonTriggerStuScan(stUibuttonItemTdf *btn)
 //        vLed_Turn(LED0);
 //    }
 //}
+
 /**
- * @brief 		按钮回调函数
- * @param 	
- * @data 		
- * @note 		框架能力还在，只是暂时没使用。
+ * @brief   注册按钮表到 UI 控件模块
+ * @param   apsButtons  按钮指针数组
+ * @param   ucCount     按钮数量
  */
-void vButtonCallback_On(void *pCtx)
+void vUibuttonInit(stUibuttonItemTdf *const apsButtons[], uint8_t ucCount)
 {
-    // 外层已经判定触发，直接执行功能，无需再次扫描
-    (void)pCtx;  // 消除参数未使用警告
-    vLed_On(LED0);
-}
-
-void vButtonCallback_Off(void *pCtx)
-{
-    (void)pCtx;
-    vLed_Off(LED0);
-}
-
-void vButtonCallback_Turn(void *pCtx)
-{
-    (void)pCtx;
-    vLed_Turn(LED0);  // 翻转功能
+    s_apsCurrentButtons = apsButtons;
+    s_ucCurrentButtonCount = ucCount;
 }
 
 // 遍历所有回调函数
 void vBtnScanAndExecute(void)
 {
+    if (s_apsCurrentButtons == NULL) return;
+
     uint8_t i;
-    uint8_t ucCount = sizeof(s_astUibuttons) / sizeof(s_astUibuttons[0]);
-
-    for (i = 0; i < ucCount; i++)
+    for (i = 0; i < s_ucCurrentButtonCount; i++)
     {
-        // 扫描：每个按钮都必须调用，更新内部状态
-        emUibuttonTriggerStuTdf eTrig = emUibuttonTriggerStuScan(s_astUibuttons[i]);
-
-        // 执行：只有被触发的按钮才执行业务逻辑
+        emUibuttonTriggerStuTdf eTrig = emUibuttonTriggerStuScan(s_apsCurrentButtons[i]);
         if (eTrig == emUibuttonTriggerStu_True)
         {
-            if (s_astUibuttons[i]->vpfCallback != NULL)
+            if (s_apsCurrentButtons[i]->vpfCallback != NULL)
             {
-                s_astUibuttons[i]->vpfCallback(s_astUibuttons[i]);
+                s_apsCurrentButtons[i]->vpfCallback(s_apsCurrentButtons[i]);
             }
         }
     }
@@ -211,9 +137,9 @@ void vUibuttonSelectDown(void)
 {	
 	uint8_t i;
 	i = ucGetUibuttonSelectedIndex();
-	uint8_t ucCount = sizeof(s_astUibuttons) / sizeof(s_astUibuttons[0]);
+	uint8_t ucCount = s_ucCurrentButtonCount;
 	
-	s_astUibuttons[i]->emSelectStatus = emUibuttonSelectStatus_Flase;
+	s_apsCurrentButtons[i]->emSelectStatus = emUibuttonSelectStatus_Flase;
 
 	if(i >= ucCount - 1)
 	{
@@ -223,7 +149,7 @@ void vUibuttonSelectDown(void)
 	{
 		i++;
 	}		
-	s_astUibuttons[i]->emSelectStatus = emUibuttonSelectStatus_True;
+	s_apsCurrentButtons[i]->emSelectStatus = emUibuttonSelectStatus_True;
 
 }
 /**
@@ -234,17 +160,17 @@ void vUibuttonSelectUp(void)
 {
 	uint8_t i;
 	i = ucGetUibuttonSelectedIndex();
-	s_astUibuttons[i]->emSelectStatus = emUibuttonSelectStatus_Flase;
+	s_apsCurrentButtons[i]->emSelectStatus = emUibuttonSelectStatus_Flase;
 	
 	if(i <= 0)
 	{
-		i = sizeof(s_astUibuttons) / sizeof(s_astUibuttons[0]) - 1;		
+		i = s_ucCurrentButtonCount - 1;		
 	}
 	else
 	{
 		i--;
 	}
-	s_astUibuttons[i]->emSelectStatus = emUibuttonSelectStatus_True;
+	s_apsCurrentButtons[i]->emSelectStatus = emUibuttonSelectStatus_True;
 }
 
 /**
@@ -257,34 +183,34 @@ void vUibuttonEnter(void)
 {
 	uint8_t i;
 	i = ucGetUibuttonSelectedIndex();
-	s_astUibuttons[i]->emUibutIsPressStatus = emUibuttonIsPress_True;
+	s_apsCurrentButtons[i]->emUibutIsPressStatus = emUibuttonIsPress_True;
 }
 
 /**
  * @brief 		取消键功能函数
  * @param 	
  * @data 		
- * @note 		实现ui按钮对应功能,返回上一级菜单（或退出）
+ * @note 		实现ui按钮对应功能,返回上一级菜单（或退出）,已经在menu.c里面实现
  */
-void vUibuttonCancel(void)
-{
-	uint8_t i;
-	i = ucGetUibuttonSelectedIndex();
-}
+//void vUibuttonCancel(void)
+//{
+//	uint8_t i;
+//	i = ucGetUibuttonSelectedIndex();
+//}
 
 //返回菜单结构体选中状态对应位置
 uint8_t ucGetUibuttonSelectedIndex(void)
 {
 	uint8_t i;
-	for(i = 0;i < sizeof(s_astUibuttons) / sizeof(s_astUibuttons[0]);i++)
+	for(i = 0;i < s_ucCurrentButtonCount;i++)
     {
 		//如果被选中就显示'>'字符
-		if(s_astUibuttons[i]->emSelectStatus == emUibuttonSelectStatus_True)
+		if(s_apsCurrentButtons[i]->emSelectStatus == emUibuttonSelectStatus_True)
 		{
 			return i;
 		}
     }
-	s_astUibuttons[0]->emSelectStatus = emUibuttonSelectStatus_True;
+	s_apsCurrentButtons[0]->emSelectStatus = emUibuttonSelectStatus_True;
     return 0;
 }
 
@@ -298,36 +224,36 @@ void vShowUibuttonTextAll(void)
 {
 	uint8_t i;
 
-	for(i = 0;i < sizeof(s_astUibuttons) / sizeof(s_astUibuttons[0]);i++)
+	for(i = 0;i < s_ucCurrentButtonCount;i++)
     {				
 		//如果被选中就显示'>'字符
-		if(s_astUibuttons[i]->emSelectStatus == emUibuttonSelectStatus_True)
+		if(s_apsCurrentButtons[i]->emSelectStatus == emUibuttonSelectStatus_True)
 		{
 			//用箭头指向被选中按钮
-			vOledDrawArrow(s_astUibuttons[i]->x,
-								 s_astUibuttons[i]->y,
+			vOledDrawArrow(s_apsCurrentButtons[i]->x,
+								 s_apsCurrentButtons[i]->y,
 								 EM_FONT_SIZE,
 								 OLED);
 			
 		}
-		vOledDrawRectangle(s_astUibuttons[i]->x,
-								 s_astUibuttons[i]->y,
-								 (uint32_t)strlen( (const char*)s_astUibuttons[i]->ucData ) * (EM_FONT_SIZE/2),
+		vOledDrawRectangle(s_apsCurrentButtons[i]->x,
+								 s_apsCurrentButtons[i]->y,
+								 (uint32_t)strlen( (const char*)s_apsCurrentButtons[i]->ucData ) * (EM_FONT_SIZE/2),
 								 EM_FONT_SIZE,
 								 OLED);
-		if(s_astUibuttons[i]->emUibutIsPressStatus == emUibuttonIsPress_True)
+		if(s_apsCurrentButtons[i]->emUibutIsPressStatus == emUibuttonIsPress_True)
 		{
-			vOledWriteStringToBuffer(s_astUibuttons[i]->x,
-								 s_astUibuttons[i]->y,
-								 s_astUibuttons[i]->ucData,
+			vOledWriteStringToBuffer(s_apsCurrentButtons[i]->x,
+								 s_apsCurrentButtons[i]->y,
+								 s_apsCurrentButtons[i]->ucData,
 								 EM_FONT_SIZE,
 								 emOledPixelShowMode_Negative,
 								 OLED);
 		}
 		else
-			vOledWriteStringToBuffer(s_astUibuttons[i]->x,
-									 s_astUibuttons[i]->y,
-									 s_astUibuttons[i]->ucData,
+			vOledWriteStringToBuffer(s_apsCurrentButtons[i]->x,
+									 s_apsCurrentButtons[i]->y,
+									 s_apsCurrentButtons[i]->ucData,
 									 EM_FONT_SIZE,
 									 emOledPixelShowMode_Positive,
 									 OLED);

@@ -9,7 +9,7 @@
  * @brief 		缓冲区设备数量枚举
  * @param 	
  * @data 			
- * @note 		
+ * @note 		感觉有些多余
  */
 typedef enum
 {
@@ -36,5 +36,5 @@ stRingBufTdf;
 
 void vRingBufParamCopy(stRingBufTdf *pststaticInit,emRingBufNumTdf emDevNum);
 uint8_t ucReadOnebyte(uint8_t *pucByte,emRingBufNumTdf emDevNum);
-uint8_t ucReadOnebyte(uint8_t *pucByte,emRingBufNumTdf emDevNum);
+uint8_t ucWriteOnebyte(uint8_t byte,emRingBufNumTdf emDevNum);
 #endif

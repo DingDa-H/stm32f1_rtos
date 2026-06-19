@@ -2,11 +2,12 @@
 #include "string.h"
 #include "oled_device.h"
 #include <stdint.h>
-#include <menu.h>
+
+#include "snake_app.h"
+#include "menu.h"
 #include "ui_text.h"   // .c 文件内引入，仅当前编译单元生效，不会循环包含
 
 static emAllMenuTdf s_emCurrentPage = emMenu;
-
 uint8_t ucGetMenuSelectedIndex(void);
 
 static uint8_t s_ucWindowStart = 0;  					// 当前显示窗口第一行在数组中的索引
@@ -127,7 +128,12 @@ void vMenuEnter(void)
 	}
 		break;
 	case 1: s_emCurrentPage = emMenu_LED;     		break;		// 进入LED子菜单
-	case 2: s_emCurrentPage = emMenu_SnakeGame;     break;
+	case 2:
+	{
+		s_emCurrentPage = emMenu_SnakeGame;
+		vSnakeInit();      // 每次进入都重新初始化
+	}
+		break;
 	case 3: s_emCurrentPage = emMenu_SerialTest;    break;
 	}
 }
@@ -224,10 +230,34 @@ void vShowCalculatorMenu(void)
 void vShowLEDMenu(void)
 {
 	emAllMenuTdf page = emGetCurrentPage();
-	vShowSingleLineAll(page);				//显示led单行文本
-	vShowUibuttonTextAll();					//显示按钮
-	vShowNumberSelectorAll();				//显示数字选择器
-	vBtnScanAndExecute();				    //遍历所有回调函数
+	vShowSingleLineAll(page);					//显示led单行文本
+	vShowUibuttonTextAll();						//显示按钮
+	vShowNumberSelectorAll();					//显示数字选择器
+	vBtnScanAndExecute();				    	//遍历所有回调函数
+}
+
+//@brief 		显示贪吃蛇游戏界面 
+//@note			
+void vShowSnakeMenu(void)
+{
+	emSnakeGameStuTdf emSnakeGameStu = emGetSnakeGameCurrentStu();
+	vShowSnakeGame(emSnakeGameStu);				//显示游戏不同状态文本
+	if(emSnakeGameStu == emSnakeGameStu_Idle 
+	|| emSnakeGameStu == emSnakeGameStu_Win
+	|| emSnakeGameStu == emSnakeGameStu_Fail)
+	{
+		vShowUibuttonTextAll();					//显示按钮
+		vBtnScanAndExecute();				    //遍历所有按钮回调函数
+	}
+	if(emSnakeGameStu == emBackMenu)			//如果是回退状态就回到主菜单（这一步做的不完美）
+	{
+		vMenuCancel();
+        return;
+    }
+	if (emSnakeGameStu == emSnakeGameStu_Running)
+	{
+		DrawSnakeGame();
+	}
 }
 
 //@brief 		显示串口界面 
@@ -269,11 +299,12 @@ void vCurrentPageShow(void)
             vShowLEDMenu();          		// 显示LED控制界面
             break;		
         
-		case emMenu_SnakeGame:		
+		case emMenu_SnakeGame:				// 贪吃蛇显示界面
+			vShowSnakeMenu();
             break;	
         
 		case emMenu_SerialTest:
-			vShowSerialMenu();          		// 显示串口界面
+			vShowSerialMenu();          	// 显示串口界面
             break;
         
         default:

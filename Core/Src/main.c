@@ -24,7 +24,10 @@
 
 #include "oled_device.h"
 #include "test.h"
-#include <menu.h>
+#include "menu.h"
+#include "led_app.h"
+#include "snake_app.h"
+
 #include "task.h"
 /* USER CODE END Includes */
 
@@ -95,13 +98,24 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   
-  Led_Init();											//led初始化
-	vOledInit();										//初始化OLED-----中间层
-	vMenuInit();										//初始化菜单
-	vCalcSystemInit();									//初始化状态机运行参数
-	Button_Init();										//物理按键初始化
-	RingBuf_Init();
-	
+    /* 底层设备初始化 */
+    Led_Init();
+    vOledInit();
+    Button_Init();
+    RingBuf_Init();
+
+    /* 中间件初始化 */
+    vInterpreterInit();                 				// 命令解释器清空命令表（仅一次）
+
+	/* 应用层初始化 */				
+    vLedAppInit();                      				// LED应用层自身初始化（按钮注册到UI等）
+    vLedAppRegisterCommands();          				// 将LED命令注册到解释器
+    // vCalcAppInit();                  				// 计算器应用层初始化（如果有）
+    // vCalcAppRegisterCommands();      				// 计算器命令注册
+
+    /* UI / 菜单初始化 */				
+    vMenuInit();				
+    vCalcSystemInit();                  				// 计算器状态机初始化
   /* USER CODE END 2 */
 
   /* Infinite loop */

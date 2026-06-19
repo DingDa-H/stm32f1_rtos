@@ -53,19 +53,8 @@
 #include "oled_device.h"
 #include "ui_button.h"
 #include "test.h"
-// ===================== 宏定义 =====================
-// 菜单一屏可见行数，和 menu.c 滚动逻辑对应
-#define MENU_VISIBLE_LINES      4U
 
-// ===================== 页面枚举 =====================
-typedef enum
-{
-    emMenu = 0,                // 主菜单
-    emMenu_Calculator,         // 计算器页面
-    emMenu_LED,                // LED控制页面
-    emMenu_SnakeGame,          // 贪吃蛇页面
-    emMenu_SerialTest,         // 串口测试页面
-} emAllMenuTdf;
+
 
 // ===================== 菜单项选中状态枚举 =====================
 typedef enum

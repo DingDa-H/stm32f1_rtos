@@ -212,6 +212,7 @@ static const stInterpreterTdf s_astLedCmdTable[] = {
 void vLedAppInit(void)
 {
     // 若将来需要动态调整，可在此处操作
+	vUibuttonInit(s_astLedButtons, s_ucLedButtonCount);		//让应用层把 LED-ui按钮数组“交”给 UI 模块
 }
 
 /**

@@ -615,6 +615,16 @@
               <FileType>5</FileType>
               <FilePath>..\User\APP\led_app.h</FilePath>
             </File>
+            <File>
+              <FileName>snake_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\APP\snake_app.c</FilePath>
+            </File>
+            <File>
+              <FileName>snake_app.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\User\APP\snake_app.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

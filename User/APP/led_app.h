@@ -16,8 +16,8 @@
 #include "interpreter_device.h"
 
 /* 外部可获取的 LED 按钮列表指针（如果需要直接在菜单中注册） */
-//extern stUibuttonItemTdf *const s_astLedButtons[];
-//extern const uint8_t s_ucLedButtonCount;
+extern stUibuttonItemTdf *const s_astLedButtons[];
+extern const uint8_t s_ucLedButtonCount;
 
 /* 初始化 LED 应用层：注册按钮回调、命令表等 */
 void vLedAppInit(void);

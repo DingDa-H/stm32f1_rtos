@@ -10,6 +10,7 @@
 #include "ring_buffer_device.h"
 #include "interpreter_device.h"
 #include "led_app.h"
+#include "snake_app.h"
 
 #include "task.h"
 
@@ -87,7 +88,7 @@ void Button_Init(void)
 	stBtnInit.pstGpioBase					= GPIOB;
 	stBtnInit.ulDebounceMs 					= 20;
 	stBtnInit.ulLongPressMs					= 100000;
-	stBtnInit.ulDoubleClickMs				= 10;
+	stBtnInit.ulDoubleClickMs				= 200;
 	stBtnInit.usGpioPin						= GPIO_PIN_13;
 	
 	vBtnParamInit(&stBtnInit,BUTTON_CANCEL);
@@ -109,11 +110,82 @@ void RingBuf_Init(void)
 	
 	vRingBufParamCopy(&stRingBuf,UART_RX_BUFFER);
 }
+
+
+/**
+ * @brief 		贪吃蛇按键事件处理函数
+ * @note 		贪吃蛇页面的按键事件处理逻辑函数
+ */
+void vSnakeGame(void)
+{
+	emButEventTdf emEventUp  		 = emBtnGetCurEvent(BUTTON_UP);
+    emButEventTdf emEventDown		 = emBtnGetCurEvent(BUTTON_DOWN);
+	emButEventTdf emEventEnable 	 = emBtnGetCurEvent(BUTTON_ENABLE);
+	emButEventTdf emEventCancel   	 = emBtnGetCurEvent(BUTTON_CANCEL);
+
+	emSnakeGameStuTdf emSnakeGameStu = emGetSnakeGameCurrentStu();
+	if(emSnakeGameStu == emSnakeGameStu_Running)
+	{
+		if (emEventUp == emBtnEvent_Click) {
+			vSetDirUp();
+			// 仅在触发事件后清除，避免提前清除
+			vBtnEventClear(BUTTON_UP);
+		}
+		if (emEventDown == emBtnEvent_Click) {
+			vSetDirDown();
+			vBtnEventClear(BUTTON_DOWN);
+		}
+		if (emEventEnable == emBtnEvent_Click) {
+			vSetDirLeft();
+			vBtnEventClear(BUTTON_ENABLE);
+		}
+		if (emEventCancel == emBtnEvent_Click) {
+			vSetDirRight();
+			vBtnEventClear(BUTTON_CANCEL);
+		}
+		if (emEventCancel == emBtnEvent_DoubleClick) {
+			emSnakeGameStu = emSnakeGameStu_Idle;
+			vSnakeInit();
+			vMenuCancel();
+			vBtnEventClear(BUTTON_CANCEL);
+		}
+	}
+	else
+	{
+		if (emEventUp == emBtnEvent_Click) {
+			
+			vUibuttonSelectUp();
+			// 仅在触发事件后清除，避免提前清除
+			vBtnEventClear(BUTTON_UP);
+		}
+		if (emEventDown == emBtnEvent_Click) {
+			vUibuttonSelectDown();
+			vBtnEventClear(BUTTON_DOWN);
+		}
+		if (emEventEnable == emBtnEvent_Click) {
+			vBtnEventClear(BUTTON_ENABLE);
+			vUibuttonEnter();
+		}
+		if (emEventCancel == emBtnEvent_Click) {
+			//返回主菜单
+			vSnakeSetStu(emSnakeGameStu_Idle);
+			vSnakeInit();
+			vMenuCancel();	
+			vBtnEventClear(BUTTON_CANCEL);
+		}
+		
+	}
+	
+}
+
+
 /**
  * @brief 		物理按键事件驱动
  * @param 	
  * @data 		
  * @note 		目前计划实现选择箭头上下移动
+* @note 		目前根据当前页面的不同实现对应的效果
+ * @note 		目前会随着页面增多逐渐变得臃肿，考虑优化
  */
 // task.c - vMainMenuKeyHandler() 函数修改
 void vMainMenuKeyHandler(void)
@@ -141,6 +213,11 @@ void vMainMenuKeyHandler(void)
 			vMenuEnter();
 			vBtnEventClear(BUTTON_ENABLE);
 		}
+		if (emEventCancel == emBtnEvent_Click) {
+			//返回主菜单
+			vMenuCancel();
+			vBtnEventClear(BUTTON_CANCEL);
+		}
 	}
 	else if(ePage == emMenu_LED)
 	{
@@ -158,14 +235,32 @@ void vMainMenuKeyHandler(void)
 			vBtnEventClear(BUTTON_ENABLE);
 			vUibuttonEnter();
 		}
+		if (emEventCancel == emBtnEvent_Click) {
+			//返回主菜单
+			vMenuCancel();	
+			vBtnEventClear(BUTTON_CANCEL);
+		}
 	}
-    
-	if (emEventCancel == emBtnEvent_Click) {
-		
-        vMenuCancel();
-        vBtnEventClear(BUTTON_CANCEL);
-    }
-
+	else if(ePage == emMenu_SnakeGame)
+	{
+		vSnakeGame();
+	}
+	else if(ePage == emMenu_SerialTest)
+	{
+		if (emEventCancel == emBtnEvent_Click) {
+			//返回主菜单
+			vMenuCancel();	
+			vBtnEventClear(BUTTON_CANCEL);
+		}
+	}
+	else if(ePage == emMenu_Calculator)
+	{
+		if (emEventCancel == emBtnEvent_Click) {
+			//返回主菜单
+			vMenuCancel();	
+			vBtnEventClear(BUTTON_CANCEL);
+		}
+	}
     // 未触发事件的按键，无需清除（避免干扰状态机）
 }
 
@@ -223,36 +318,8 @@ void vUartFrameProcess(void)
             }
         }
     }
-		
 }
 
-///**
-// * @brief  处理接收完成的一帧数据
-// * @note   主循环调用，处理完后清除标志并重置索引
-// */
-//void vProcessReceivedFrame(void)
-//{
-//    if (s_ucRxComplete == 0) return;
-
-//    if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedOn) == 0)
-//	{
-//        vLed_On(LED0);
-//        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
-//		
-//    } else if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedOff) == 0) 
-//	{
-//        vLed_Off(LED0);
-//        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
-//		
-//    } else if (strcmp((char*)s_aucFrameBuf, (const char*)c_aucCmdLedTurn) == 0) 
-//	{
-//        vLed_Turn(LED0);
-//        HAL_UART_Transmit(&huart1, (uint8_t*)c_aucAckLed, sizeof(c_aucAckLed) - 1, 100);
-//    }
-
-//    s_ucRxComplete = 0;
-//    /* 不需要 memset，下次写入会覆盖 */
-//}
 
 
 
@@ -284,33 +351,31 @@ void vUartFrameProcess(void)
  */
 void vTask(void)
 {
-//	if(emGetCurrentPage() == emMenu_Calculator)
-//		vTest();							// 薄膜按键执行函数
-//								
-//    vBtnExecute();	   					// 先扫描物理按键
-//    vMainMenuKeyHandler(); 		s		// 处理事件
-//	
-//    vCurrentPageShow();           		// 显示当前页面
-	
-//	vUartFrameProcess();					// 
-//    if (s_ucRxComplete) {
-//        vProcessReceivedFrame();
-//        s_ucRxComplete = 0;
-//    }
-	// 1. 系统启动时初始化解释器
-	vInterpreterInit();
-
-	// 2. 各应用层注册自己的命令
-	vLedAppRegisterCommands();
-//	vCalcAppRegisterCommands();   // 如果你有计算器应用层
-	vUartFrameProcess();
-    if (s_ucRxComplete) {
-        /* 1. 分词 */
-        uint8_t ucTokenCount = ucFenCi((char *)s_aucFrameBuf, s_apsArgv, 10);
-        
-        /* 2. 查表 + 3. 回调（使用全局注册的命令表） */
-        vBianliCmdList(s_apsArgv);
-        
-        s_ucRxComplete = 0;
-    }
+	if(emGetCurrentPage() == emMenu_Calculator)
+		vTest();								// 薄膜按键执行函数
+	if(emGetCurrentPage() == emMenu_SerialTest)
+	{
+	//	vCalcAppRegisterCommands();   			// 如果你有计算器应用层
+		vUartFrameProcess();
+		if (s_ucRxComplete) {
+			/* 1. 分词 */
+			uint8_t ucTokenCount = ucFenCi((char *)s_aucFrameBuf, s_apsArgv, 10);
+			
+			/* 2. 查表 + 3. 回调（使用全局注册的命令表） */
+			vBianliCmdList(s_apsArgv);
+			
+			s_ucRxComplete = 0;
+		}
+	}
+	if(emGetCurrentPage() == emMenu_LED)		// 执行led相关初始化
+	{
+		vLedAppInit();							// 目前只有led页面的ui按钮注册
+	}
+//	if(emGetCurrentPage() == emMenu_SnakeGame)
+//	{
+//		vSnakeInit();							// 贪吃蛇初始化
+//	}
+    vBtnExecute();	   							// 先扫描物理按键
+    vMainMenuKeyHandler(); 						// 处理事件
+    vCurrentPageShow();           				// 显示当前页面
 }

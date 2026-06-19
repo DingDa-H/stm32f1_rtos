@@ -59,7 +59,7 @@ void vCalcParamInit(stFsmRunParamTdf *pParam)
     pParam->ucOperator  	= 0;      // 0 表示无运算符
     pParam->lCurrentInput 	= 0;
 	pParam->ucCurrentState	= emState_In01;
-	vOledWriteOneCharToBuffer(0,0,'0',EM_FONT_SIZE,emOledPixelShowMode_Positive, OLED);
+	vOledWriteOneCharToBuffer(0,EM_FONT_SIZE,'0',EM_FONT_SIZE,emOledPixelShowMode_Positive, OLED);
 	vOledRefreshFromBuffer(OLED);
 }
 
@@ -192,8 +192,8 @@ uint8_t ucOledShowNumber(int32_t num)
 
     uint8_t blank[] = "        ";
 	
-    vOledWriteStringToBuffer(0,0, blank, EM_FONT_SIZE,emOledPixelShowMode_Positive,OLED);
-	vOledWriteStringToBuffer(0, 0, buf, EM_FONT_SIZE,emOledPixelShowMode_Positive,OLED);
+    vOledWriteStringToBuffer(0,EM_FONT_SIZE, blank, EM_FONT_SIZE,emOledPixelShowMode_Positive,OLED);
+	vOledWriteStringToBuffer(0,EM_FONT_SIZE, buf, EM_FONT_SIZE,emOledPixelShowMode_Positive,OLED);
 	return t;
 }
 
@@ -255,7 +255,7 @@ static emStateTdf emHandleInput1State(emEventTdf event,uint8_t key)
 				s_stCalcParam.ucOperator = key;
 				uint8_t t;
 				t = ucOledShowNumber(s_stCalcParam.iOperato_1);				
-				vOledWriteOneCharToBuffer(EM_FONT_SIZE*t/2, 0, s_stCalcParam.ucOperator, EM_FONT_SIZE, emOledPixelShowMode_Positive, OLED);
+				vOledWriteOneCharToBuffer(EM_FONT_SIZE*t/2, EM_FONT_SIZE, s_stCalcParam.ucOperator, EM_FONT_SIZE, emOledPixelShowMode_Positive, OLED);
 				return emState_Operator;
 			}
 				break;
@@ -300,7 +300,7 @@ static emStateTdf emProcessOperator(emEventTdf event,uint8_t key)
 				uint8_t t;
 				t = ucOledShowNumber(s_stCalcParam.iOperato_1);	
 						
-				vOledWriteOneCharToBuffer(EM_FONT_SIZE*t/2, 0, s_stCalcParam.ucOperator, EM_FONT_SIZE, emOledPixelShowMode_Positive, OLED);
+				vOledWriteOneCharToBuffer(EM_FONT_SIZE*t/2, EM_FONT_SIZE, s_stCalcParam.ucOperator, EM_FONT_SIZE, emOledPixelShowMode_Positive, OLED);
 			}
 				break;
 			case emEvent_Sum:
@@ -350,7 +350,7 @@ static emStateTdf emHandleInput2State(emEventTdf event,uint8_t key)
 				uint8_t t;
 				t = ucOledShowNumber(s_stCalcParam.iOperato_1);	
 				
-				vOledWriteOneCharToBuffer(EM_FONT_SIZE*t/2, 0, s_stCalcParam.ucOperator, EM_FONT_SIZE, emOledPixelShowMode_Positive, OLED);
+				vOledWriteOneCharToBuffer(EM_FONT_SIZE*t/2, EM_FONT_SIZE, s_stCalcParam.ucOperator, EM_FONT_SIZE, emOledPixelShowMode_Positive, OLED);
 
 				//求和，将求和的值赋值给操作数1，然后显示操作数和运算符，并且跳转到运算状态
 				return emState_Operator;
@@ -419,7 +419,7 @@ static emStateTdf emHandleResultState(emEventTdf event,uint8_t key)
 				uint8_t t;
 				t = ucOledShowNumber(s_stCalcParam.iOperato_1);		
 						
-				vOledWriteOneCharToBuffer(EM_FONT_SIZE*t/2, 0, s_stCalcParam.ucOperator, EM_FONT_SIZE, emOledPixelShowMode_Positive, OLED);
+				vOledWriteOneCharToBuffer(EM_FONT_SIZE*t/2, EM_FONT_SIZE, s_stCalcParam.ucOperator, EM_FONT_SIZE, emOledPixelShowMode_Positive, OLED);
 				return emState_Operator;
 				
 			}

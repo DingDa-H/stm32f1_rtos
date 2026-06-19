@@ -9,7 +9,8 @@
 
 #include "stm32f1xx_hal.h"
 #include "project.h"
-
+#include "oled_device.h"
+#include "led_device.h"
 
 /**
  * @brief 		按钮是否被选中
@@ -112,6 +113,5 @@ void vUibuttonEnter(void);
 void vUibuttonCancel(void);
 
 void vBtnScanAndExecute(void);
-
-
+void vUibuttonInit(stUibuttonItemTdf *apsButtons[], uint8_t ucCount);
 #endif

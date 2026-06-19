@@ -4,12 +4,15 @@
 #include <stdint.h>
 #include <ui_text.h>
 	
-//static uint8_t s_aucCalc[]     = "Calculator";			//计算器
+static uint8_t s_aucCalc[]     	  = "Calculator";			//计算器
 
-static uint8_t s_aucLed[]  	   = "Led";					//Led
-static uint8_t s_aucSerial[]   = "Serial Test";			//串口
+static uint8_t s_aucLed[]  	   	  = "Led";					//Led
 
+static uint8_t s_aucSerial[]   	  = "Serial Test";			//串口
 
+static uint8_t s_aucSnake[]    	  = "Snake Game";			//贪吃蛇
+static uint8_t s_aucSnakeWin[]    = "Game Win";				//贪吃蛇
+static uint8_t s_aucSnakeFail[]   = "Game Fail";			//贪吃蛇
 
 /**
  * @brief 		[Led单行文本]
@@ -45,12 +48,36 @@ static stTextItemTdf s_stSingleLineTest_s_aucSerial =
 	.emFontSize = EM_FONT_SIZE,
 };
 
-
-// 子菜单文本项 结构体指针数组
-static stTextItemTdf *s_astTextLines[] = {
-	&s_stSingleLineTest_Led,
-//	&s_stSingleLineTest_s_aucCalc;
+//贪吃蛇
+static stTextItemTdf s_stSingleLineTest_s_aucSnake = 
+{
+	.x			= 64 - (sizeof(s_aucCalc) / sizeof(s_aucCalc[0]) - 1) / 2 * EM_FONT_SIZE / 2,
+	.y			= 0,
+	.ucData		= s_aucSnake,
+	.emFontSize = EM_FONT_SIZE,
 };
+
+//贪吃蛇--Win
+static stTextItemTdf s_stSingleLineTest_s_aucSnakeWin = 
+{
+	.x			= 64 - (sizeof(s_aucCalc) / sizeof(s_aucCalc[0]) - 1) / 2 * EM_FONT_SIZE / 2,
+	.y			= 0,
+	.ucData		= s_aucSnakeWin,
+	.emFontSize = EM_FONT_SIZE,
+};
+//贪吃蛇--Fail
+static stTextItemTdf s_stSingleLineTest_s_aucSnakeFail = 
+{
+	.x			= 64 - (sizeof(s_aucCalc) / sizeof(s_aucCalc[0]) - 1) / 2 * EM_FONT_SIZE / 2,
+	.y			= 0,
+	.ucData		= s_aucSnakeFail,
+	.emFontSize = EM_FONT_SIZE,
+};
+// 子菜单文本项 结构体指针数组
+//static stTextItemTdf *s_astTextLines[] = {
+//	&s_stSingleLineTest_Led,
+//	&s_stSingleLineTest_s_aucCalc;
+//};
 
 
 
@@ -71,20 +98,69 @@ void vShowSingleLineAll(emAllMenuTdf eCurPage)
                                      OLED);
             break;
 
-//        case emMenu_Calculator:
-//            vOledWriteStringToBuffer(s_stSingleLineTest_s_aucCalc.x,
-//                                     s_stSingleLineTest_s_aucCalc.y,
-//                                     s_stSingleLineTest_s_aucCalc.ucData,
-//                                     s_stSingleLineTest_s_aucCalc.emFontSize,
-//                                     emOledPixelShowMode_Positive,
-//                                     OLED);
-//            break;
+        case emMenu_Calculator:
+            vOledWriteStringToBuffer(s_stSingleLineTest_s_aucCalc.x,
+                                     s_stSingleLineTest_s_aucCalc.y,
+                                     s_stSingleLineTest_s_aucCalc.ucData,
+                                     s_stSingleLineTest_s_aucCalc.emFontSize,
+                                     emOledPixelShowMode_Positive,
+                                     OLED);
+            break;
 
         case emMenu_SerialTest:
             vOledWriteStringToBuffer(s_stSingleLineTest_s_aucSerial.x,
                                      s_stSingleLineTest_s_aucSerial.y,
 									 s_stSingleLineTest_s_aucSerial.ucData,
                                      s_stSingleLineTest_s_aucSerial.emFontSize,
+                                     emOledPixelShowMode_Positive,
+                                     OLED);
+            break;
+
+        default:
+            break;
+    }
+}
+/**
+ * @brief  根据传入页面，显示对应单行文本
+ * @param  emSnakeGameStu: 贪吃蛇游戏状态
+ */
+void vShowSnakeGame(emSnakeGameStuTdf emSnakeGameStu)
+{
+    switch(emSnakeGameStu)
+    {	// 游戏开始前状态
+        case emSnakeGameStu0:
+            vOledWriteStringToBuffer(s_stSingleLineTest_s_aucSnake.x,
+                                     s_stSingleLineTest_s_aucSnake.y,
+                                     s_stSingleLineTest_s_aucSnake.ucData,
+                                     s_stSingleLineTest_s_aucSnake.emFontSize,
+                                     emOledPixelShowMode_Positive,
+                                     OLED);
+            break;
+
+		// 游戏开始后状态
+        case emSnakeGameStu1:
+//            vOledWriteStringToBuffer(s_stSingleLineTest_s_aucSnake.x,
+//                                     s_stSingleLineTest_s_aucSnake.y,
+//									 s_stSingleLineTest_s_aucSnake.ucData,
+//                                     s_stSingleLineTest_s_aucSnake.emFontSize,
+//                                     emOledPixelShowMode_Positive,
+//                                     OLED);
+            break;
+		// 游戏胜利
+		case emSnakeGamewin:
+            vOledWriteStringToBuffer(s_stSingleLineTest_s_aucSnakeWin.x,
+                                     s_stSingleLineTest_s_aucSnakeWin.y,
+									 s_stSingleLineTest_s_aucSnakeWin.ucData,
+                                     s_stSingleLineTest_s_aucSnakeWin.emFontSize,
+                                     emOledPixelShowMode_Positive,
+                                     OLED);
+            break;
+		// 游戏结束
+		case emSnakeGamefail:
+            vOledWriteStringToBuffer(s_stSingleLineTest_s_aucSnakeFail.x,
+                                     s_stSingleLineTest_s_aucSnakeFail.y,
+									 s_stSingleLineTest_s_aucSnakeFail.ucData,
+                                     s_stSingleLineTest_s_aucSnakeFail.emFontSize,
                                      emOledPixelShowMode_Positive,
                                      OLED);
             break;

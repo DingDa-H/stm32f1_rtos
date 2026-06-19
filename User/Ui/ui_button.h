@@ -113,6 +113,5 @@ void vUibuttonEnter(void);
 void vUibuttonCancel(void);
 
 void vBtnScanAndExecute(void);
-
-
+void vUibuttonInit(stUibuttonItemTdf *const apsButtons[], uint8_t ucCount);
 #endif

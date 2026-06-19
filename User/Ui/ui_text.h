@@ -12,8 +12,6 @@
 #include "project.h"
 #include "oled_device.h"
 
-//只引入枚举头，不引入完整菜单逻辑（最小依赖）
-#include "menu.h"
 /**
  * @brief 		文本控件数据结构
  * @param 		
@@ -31,4 +29,5 @@ typedef struct
 stTextItemTdf;
 
 void vShowSingleLineAll(emAllMenuTdf eCurPage);
+void vShowSnakeGame(emSnakeGameStuTdf emSnakeGameStu);
 #endif
