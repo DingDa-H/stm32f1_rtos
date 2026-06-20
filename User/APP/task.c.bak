@@ -16,7 +16,7 @@
 
 
 static char *s_apsArgv[10];   // 分词结果指针数组
-
+static uint32_t s_ulLastDispTick = 0;
 /**
  * @brief 		LED初始化
  * @param 	
@@ -144,7 +144,7 @@ void vSnakeGame(void)
 			vBtnEventClear(BUTTON_CANCEL);
 		}
 		if (emEventCancel == emBtnEvent_DoubleClick) {
-			emSnakeGameStu = emSnakeGameStu_Idle;
+			vSnakeSetStu(emSnakeGameStu_Idle);
 			vSnakeInit();
 			vMenuCancel();
 			vBtnEventClear(BUTTON_CANCEL);
@@ -349,33 +349,61 @@ void vUartFrameProcess(void)
  * @data 			
  * @note 		实现加减乘除的思路，状态机/
  */
+//void vTask(void)
+//{
+//	if(emGetCurrentPage() == emMenu_Calculator)
+//		vTest();								// 薄膜按键执行函数
+//	if(emGetCurrentPage() == emMenu_SerialTest)
+//	{
+//	//	vCalcAppRegisterCommands();   			// 如果你有计算器应用层
+//		vUartFrameProcess();
+//		if (s_ucRxComplete) {
+//			/* 1. 分词 */
+//			uint8_t ucTokenCount = ucFenCi((char *)s_aucFrameBuf, s_apsArgv, 10);
+//			
+//			/* 2. 查表 + 3. 回调（使用全局注册的命令表） */
+//			vBianliCmdList(s_apsArgv);
+//			
+//			s_ucRxComplete = 0;
+//		}
+//	}
+//	if(emGetCurrentPage() == emMenu_LED)		// 执行led相关初始化
+//	{
+//		vLedAppInit();							// 目前只有led页面的ui按钮注册
+//	}
+
+//    vBtnExecute();	   							// 先扫描物理按键
+//    vMainMenuKeyHandler(); 						// 处理事件
+//    vCurrentPageShow();           				// 显示当前页面
+//}
 void vTask(void)
 {
+	uint32_t tNow = HAL_GetTick();
+
 	if(emGetCurrentPage() == emMenu_Calculator)
-		vTest();								// 薄膜按键执行函数
+		vTest();							
 	if(emGetCurrentPage() == emMenu_SerialTest)
 	{
-	//	vCalcAppRegisterCommands();   			// 如果你有计算器应用层
 		vUartFrameProcess();
 		if (s_ucRxComplete) {
-			/* 1. 分词 */
-			uint8_t ucTokenCount = ucFenCi((char *)s_aucFrameBuf, s_apsArgv, 10);
-			
-			/* 2. 查表 + 3. 回调（使用全局注册的命令表） */
+			uint8_t ucTokenCount = ucFenCi((char *)s_apsArgv, s_apsArgv, 10);
 			vBianliCmdList(s_apsArgv);
-			
 			s_ucRxComplete = 0;
 		}
 	}
-	if(emGetCurrentPage() == emMenu_LED)		// 执行led相关初始化
+	if(emGetCurrentPage() == emMenu_LED)		
 	{
-		vLedAppInit();							// 目前只有led页面的ui按钮注册
+		vLedAppInit();							
 	}
-//	if(emGetCurrentPage() == emMenu_SnakeGame)
-//	{
-//		vSnakeInit();							// 贪吃蛇初始化
-//	}
-    vBtnExecute();	   							// 先扫描物理按键
-    vMainMenuKeyHandler(); 						// 处理事件
-    vCurrentPageShow();           				// 显示当前页面
+
+    // 1. 按键扫描永远最先执行，保证按键不丢
+    vBtnExecute();	   							
+    vMainMenuKeyHandler(); 					
+
+    // 2. 刷新节流：120ms刷新一次屏幕，和蛇移动速度150ms匹配
+    if(tNow - s_ulLastDispTick >= 120)
+    {
+        vCurrentPageShow();           
+        s_ulLastDispTick = tNow;
+    }
 }

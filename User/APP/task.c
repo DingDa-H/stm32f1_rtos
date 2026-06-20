@@ -16,7 +16,7 @@
 
 
 static char *s_apsArgv[10];   // 分词结果指针数组
-
+static uint32_t s_ulLastDispTick = 0;
 /**
  * @brief 		LED初始化
  * @param 	
@@ -144,7 +144,7 @@ void vSnakeGame(void)
 			vBtnEventClear(BUTTON_CANCEL);
 		}
 		if (emEventCancel == emBtnEvent_DoubleClick) {
-			emSnakeGameStu = emSnakeGameStu_Idle;
+			vSnakeSetStu(emSnakeGameStu_Idle);
 			vSnakeInit();
 			vMenuCancel();
 			vBtnEventClear(BUTTON_CANCEL);
@@ -371,11 +371,39 @@ void vTask(void)
 	{
 		vLedAppInit();							// 目前只有led页面的ui按钮注册
 	}
-//	if(emGetCurrentPage() == emMenu_SnakeGame)
-//	{
-//		vSnakeInit();							// 贪吃蛇初始化
-//	}
+
     vBtnExecute();	   							// 先扫描物理按键
     vMainMenuKeyHandler(); 						// 处理事件
     vCurrentPageShow();           				// 显示当前页面
 }
+//void vTask(void)
+//{
+//	uint32_t tNow = HAL_GetTick();
+
+//	if(emGetCurrentPage() == emMenu_Calculator)
+//		vTest();							
+//	if(emGetCurrentPage() == emMenu_SerialTest)
+//	{
+//		vUartFrameProcess();
+//		if (s_ucRxComplete) {
+//			uint8_t ucTokenCount = ucFenCi((char *)s_apsArgv, s_apsArgv, 10);
+//			vBianliCmdList(s_apsArgv);
+//			s_ucRxComplete = 0;
+//		}
+//	}
+//	if(emGetCurrentPage() == emMenu_LED)		
+//	{
+//		vLedAppInit();							
+//	}
+
+//    // 1. 按键扫描永远最先执行，保证按键不丢
+//    vBtnExecute();	   							
+//    vMainMenuKeyHandler(); 					
+
+//    // 2. 刷新节流：120ms刷新一次屏幕，和蛇移动速度150ms匹配
+//    if(tNow - s_ulLastDispTick >= 120)
+//    {
+//        vCurrentPageShow();           
+//        s_ulLastDispTick = tNow;
+//    }
+//}

@@ -247,10 +247,11 @@ void vShowSnakeMenu(void)
 	|| emSnakeGameStu == emSnakeGameStu_Fail)
 	{
 		vShowUibuttonTextAll();					//显示按钮
-		vBtnScanAndExecute();				    //遍历所有按钮回调函数
+		vBtnScanAndExecute();				    //遍历所有按钮回调函数		
 	}
 	if(emSnakeGameStu == emBackMenu)			//如果是回退状态就回到主菜单（这一步做的不完美）
 	{
+		vSnakeSetStu(emSnakeGameStu_Idle);
 		vMenuCancel();
         return;
     }
@@ -280,7 +281,7 @@ void vCurrentPageShow(void)
     // ==============================================
     // ✅ 关键修复：计算器页面 不允许清屏！！！
     // ==============================================
-    if (s_emCurrentPage != emMenu_Calculator)
+    if (s_emCurrentPage != emMenu_Calculator || s_emCurrentPage != emMenu_SnakeGame)
     {
         vOledClearBuffer();
     }
@@ -314,7 +315,7 @@ void vCurrentPageShow(void)
     // ==============================================
     // ✅ 关键修复：计算器页面 不由这里刷新！
     // ==============================================
-    if (s_emCurrentPage != emMenu_Calculator)
+    if (s_emCurrentPage != emMenu_Calculator || s_emCurrentPage != emMenu_SnakeGame)
     {
         vOledRefreshFromBuffer(OLED);
     }

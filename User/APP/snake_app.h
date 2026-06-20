@@ -18,7 +18,26 @@
 extern stUibuttonItemTdf *const c_astSnakeButtons[];
 extern const uint8_t c_sucSnakeButtonCount;
 
+/**
+ * @brief 		贪吃蛇单链表节点
+ * @note 		
+ */
+//typedef struct {
+//    uint8_t x;
+//    uint8_t y;
+//    int16_t next;  								// 下一个节点的数组索引，-1 表示链表尾
+//}
+//stSnakeNode;
 
+
+// 改为双向
+typedef struct stSnakeNode
+{
+    int16_t x;
+    int16_t y;
+    int16_t next;
+    int16_t prev;  // 新增前驱指针
+}stSnakeNode;
 /**
  * @brief 		贪吃蛇蛇身体坐标
  * @note 		
@@ -36,7 +55,7 @@ void vSetDirDown(void);
 void vSetDirLeft(void);
 void vSetDirRight(void);
 
-void DrawSnakeGame(void);				//游戏实现函数
-emSnakeGameStuTdf emGetSnakeGameCurrentStu(void);
-void vSnakeSetStu(emSnakeGameStuTdf emStu);
+void DrawSnakeGame(void);							//游戏实现函数
+emSnakeGameStuTdf emGetSnakeGameCurrentStu(void);	//获取状态
+void vSnakeSetStu(emSnakeGameStuTdf emStu);			//设置状态
 #endif
