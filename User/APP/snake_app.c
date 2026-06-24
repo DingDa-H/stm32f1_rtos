@@ -194,12 +194,12 @@ static void s_vResetSnakeBody(void)
 			s_sHead = s_sTail = newIdx;
 		} else {
             // 双向绑定
-			s_astPool[newIdx].next = s_sHead;
-            s_astPool[s_sHead].prev = newIdx;
-			s_sHead = newIdx;
+			s_astPool[newIdx].next = s_sHead;			// 新节点next指向旧头
+            s_astPool[s_sHead].prev = newIdx;			// 旧头prev指向新节点
+			s_sHead = newIdx;							// 更新头为新节点
 		}
 	}
-}
+}              
 /**
  * @brief 		贪吃蛇初始化函数
  * @param 	
@@ -496,4 +496,5 @@ void DrawSnakeGame()
 		vOledDrawOnePointToBuffer(s_astPool[ucIdx].x, s_astPool[ucIdx].y, OLED);
 		ucIdx = s_astPool[ucIdx].next;
 	}
+	// 更新缓存
 }

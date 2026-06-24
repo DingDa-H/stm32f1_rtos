@@ -37,4 +37,6 @@ stRingBufTdf;
 void vRingBufParamCopy(stRingBufTdf *pststaticInit,emRingBufNumTdf emDevNum);
 uint8_t ucReadOnebyte(uint8_t *pucByte,emRingBufNumTdf emDevNum);
 uint8_t ucWriteOnebyte(uint8_t byte,emRingBufNumTdf emDevNum);
+
+void vRingBufClear(uint8_t ucDevNum);
 #endif

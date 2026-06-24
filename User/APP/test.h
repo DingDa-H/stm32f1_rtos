@@ -41,7 +41,8 @@ typedef struct
 stFsmRunParamTdf;
 
 void vTest(void);
-void vOledInit(void);
+void vState_machine_run(uint8_t key);
+void vCalcUiResetDraw(void);
 void vCalcParamInit(stFsmRunParamTdf *pParam);
 void vCalcSystemInit(void);
 #endif

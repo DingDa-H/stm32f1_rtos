@@ -18,17 +18,21 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 #include "oled_device.h"
 #include "test.h"
 #include "menu.h"
 #include "led_app.h"
 #include "snake_app.h"
+#include "botton.h"
 
-#include "task.h"
+#include "app_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,14 +53,24 @@
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* USER CODE BEGIN PV */
-
+QueueHandle_t s_xBtnQueue;  				// 全局队列句柄
+TaskHandle_t s_hSerialTaskHandle;			
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
+void StartDefaultTask(void *argument);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -110,14 +124,80 @@ int main(void)
 	/* 应用层初始化 */				
     vLedAppInit();                      				// LED应用层自身初始化（按钮注册到UI等）
     vLedAppRegisterCommands();          				// 将LED命令注册到解释器
-	vSnakeInit();										// 贪吃蛇初始化
     // vCalcAppInit();                  				// 计算器应用层初始化（如果有）
     // vCalcAppRegisterCommands();      				// 计算器命令注册
 
-    /* UI / 菜单初始化 */				
-    vMenuInit();				
-    vCalcSystemInit();                  				// 计算器状态机初始化
+    /* UI / 菜单初始化 */
+	vMenuInit();
   /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  s_xBtnQueue = xQueueCreate(10, sizeof(stBtnEventMsg));
+  	if(s_xBtnQueue == NULL)
+	{
+		// ucHeap堆内存不够，创建失败，停机调试
+		Error_Handler();
+	}
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+//  xTaskCreate(vBtnScanTask, "BtnScan", 128, NULL, 3, NULL);
+//  xTaskCreate(vDisplayTask, "Display", 512, NULL, 1, NULL);
+//  // 创建应用主任务
+//  xTaskCreate(vAppTask,            // 任务函数
+//                "AppTask",         // 任务名称（调试用）
+//                256,               // 栈大小（words，根据实际需求调整）
+//                NULL,              // 参数
+//                4,                 // 优先级
+//                NULL); 			   // 任务句柄（可选，若不需要可传 NULL）
+	
+	xTaskCreate(vSerialTask, "Serial", 128, NULL, 2, &s_hSerialTaskHandle);
+	BaseType_t ret;
+	ret = xTaskCreate(vBtnScanTask, "BtnScan", 128, NULL, 3, NULL);
+	if(ret != pdPASS) 
+		Error_Handler();
+
+	ret = xTaskCreate(vDisplayTask, "Display", 200, NULL, 1, NULL);
+	if(ret != pdPASS) 
+		Error_Handler();
+
+	ret = xTaskCreate(vAppTask, "AppTask", 256, NULL, 4, NULL);
+	if(ret != pdPASS)
+	{
+		// 卡死在这里，证明堆不够
+		Error_Handler();
+	}
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -126,7 +206,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  vTask();
+//	  vTask();
   }
   /* USER CODE END 3 */
 }
@@ -294,6 +374,24 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

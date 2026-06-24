@@ -46,7 +46,7 @@ uint8_t ucWriteOnebyte(uint8_t byte,emRingBufNumTdf emDevNum)
 
 /**
  * @brief 		读取一个字节
- * @param 		aucRxBuf：缓冲区数组
+ * @param 		pucByte：缓冲区数组地址
  * @rev 		0-成功	1-失败
  * @note 		从缓冲区读取字节
  */
@@ -62,4 +62,16 @@ uint8_t ucReadOnebyte(uint8_t *pucByte,emRingBufNumTdf emDevNum)
 	}
 	s_stRingBuf[emDevNum].ucCount--;
 	return 0;
+}
+/**
+ * @brief 		缓冲区清空函数
+ * @param 		aucRxBuf：缓冲区数组
+ * @note 		从缓冲区读取字节
+ */
+void vRingBufClear(uint8_t ucDevNum)
+{
+    if (ucDevNum >= RING_BUFFER_DEV_NUM) return;
+    s_stRingBuf[ucDevNum].ucRead  = 0;
+    s_stRingBuf[ucDevNum].ucWrite = 0;
+    s_stRingBuf[ucDevNum].ucCount = 0;
 }

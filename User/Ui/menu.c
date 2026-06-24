@@ -1,14 +1,16 @@
 #include "stm32f1xx_hal.h"
-#include "string.h"
+#include <string.h>
 #include "oled_device.h"
 #include <stdint.h>
-
+#include "FreeRTOS.h"
+#include "task.h"
 #include "snake_app.h"
 #include "menu.h"
 #include "ui_text.h"   // .c 文件内引入，仅当前编译单元生效，不会循环包含
 
 static emAllMenuTdf s_emCurrentPage = emMenu;
 uint8_t ucGetMenuSelectedIndex(void);
+extern TaskHandle_t s_hSerialTaskHandle;			// 串口任务句柄
 
 static uint8_t s_ucWindowStart = 0;  					// 当前显示窗口第一行在数组中的索引
 	
@@ -124,17 +126,21 @@ void vMenuEnter(void)
 	{
 		s_emCurrentPage = emMenu_Calculator;
 		vOledClearBuffer();
-		vCalcSystemInit(); 										// ✅ 初始化，显示 0
+		vCalcSystemInit(); 										// 计算器应用层初始化
+		vCalcUiResetDraw();										// 初始绘制
 	}
 		break;
 	case 1: s_emCurrentPage = emMenu_LED;     		break;		// 进入LED子菜单
 	case 2:
 	{
 		s_emCurrentPage = emMenu_SnakeGame;
-		vSnakeInit();      // 每次进入都重新初始化
+		vSnakeInit();      										// 每次进入都重新初始化
 	}
 		break;
-	case 3: s_emCurrentPage = emMenu_SerialTest;    break;
+	case 3: 
+		s_emCurrentPage = emMenu_SerialTest;
+		xTaskNotifyGive(s_hSerialTaskHandle);
+		break;
 	}
 }
 
@@ -221,7 +227,8 @@ void vShowMenu(void)
 //@note			
 void vShowCalculatorMenu(void)
 {
-	;
+	emAllMenuTdf page = emGetCurrentPage();
+	vShowSingleLineAll(page);					//显示led单行文本
 }
 
 
@@ -249,16 +256,17 @@ void vShowSnakeMenu(void)
 		vShowUibuttonTextAll();					//显示按钮
 		vBtnScanAndExecute();				    //遍历所有按钮回调函数		
 	}
+	
+	if (emSnakeGameStu == emSnakeGameStu_Running)
+	{
+		DrawSnakeGame();
+	}
 	if(emSnakeGameStu == emBackMenu)			//如果是回退状态就回到主菜单（这一步做的不完美）
 	{
 		vSnakeSetStu(emSnakeGameStu_Idle);
 		vMenuCancel();
         return;
     }
-	if (emSnakeGameStu == emSnakeGameStu_Running)
-	{
-		DrawSnakeGame();
-	}
 }
 
 //@brief 		显示串口界面 
@@ -281,7 +289,7 @@ void vCurrentPageShow(void)
     // ==============================================
     // ✅ 关键修复：计算器页面 不允许清屏！！！
     // ==============================================
-    if (s_emCurrentPage != emMenu_Calculator || s_emCurrentPage != emMenu_SnakeGame)
+    if (s_emCurrentPage != emMenu_Calculator)
     {
         vOledClearBuffer();
     }
@@ -311,12 +319,5 @@ void vCurrentPageShow(void)
         default:
             break;
     }
-
-    // ==============================================
-    // ✅ 关键修复：计算器页面 不由这里刷新！
-    // ==============================================
-    if (s_emCurrentPage != emMenu_Calculator || s_emCurrentPage != emMenu_SnakeGame)
-    {
-        vOledRefreshFromBuffer(OLED);
-    }
+    vOledRefreshFromBuffer(OLED);
 }

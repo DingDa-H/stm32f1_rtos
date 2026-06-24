@@ -18,22 +18,7 @@ static emStateTdf emHandleResultState(emEventTdf event,uint8_t key);
 
 static efsmCallbackTdf *s_apfnFsmCallback[]={emHandleInput1State,emProcessOperator,emHandleInput2State,emHandleResultState};
 
-/**
- * @brief 		OLED初始化函数
- * @version 	
- * @data 			
- * @note 		
- */
-void vOledInit(void)
-{
-	stOledStaticParamTdf stInit;
-	stInit.pstSclGpioBase	= GPIOB;
-	stInit.pstSdaGpioBase	= GPIOB;
-	stInit.usSclGpioPin		= GPIO_PIN_8;
-	stInit.usSdaGpioPin		= GPIO_PIN_9;
-	
-	vOledDeviceInit(&stInit, OLED);
-}
+
 /**
  * @brief 		状态机初始化函数
  * @param 	
@@ -59,10 +44,12 @@ void vCalcParamInit(stFsmRunParamTdf *pParam)
     pParam->ucOperator  	= 0;      // 0 表示无运算符
     pParam->lCurrentInput 	= 0;
 	pParam->ucCurrentState	= emState_In01;
-	vOledWriteOneCharToBuffer(0,EM_FONT_SIZE,'0',EM_FONT_SIZE,emOledPixelShowMode_Positive, OLED);
-	vOledRefreshFromBuffer(OLED);
 }
-
+// 新增：仅进入计算器页面时，才执行UI初始绘制
+void vCalcUiResetDraw(void)
+{
+    vOledWriteOneCharToBuffer(0,EM_FONT_SIZE,'0',EM_FONT_SIZE,emOledPixelShowMode_Positive, OLED);
+}
 /**
  * @brief  字符串转换为有符号32位整数
  * @param  str  输入字符串，可带 '+' 或 '-' 前缀
@@ -441,6 +428,7 @@ static emStateTdf emHandleResultState(emEventTdf event,uint8_t key)
 void vState_machine_run(uint8_t key)
 {
 	emEventTdf event = emReturnEvent(key);
+	
 	//获取当前状态
 	emStateTdf next_state = s_stCalcParam.ucCurrentState;
 	
@@ -479,17 +467,13 @@ void vTest(void)
 {		
 	uint8_t ucKey;
 	ucKey = ucKeypad_scan();					//调用扫描函数并返回按键
-												// 检测到有按键
-	if(ucKey != 0)
+												
+
+	if(ucKey != 0)								//检测到有按键
 	{
-		if(ucKey != 0)
-		{
-			vState_machine_run(ucKey);			//轮询状态机
-			vOledRefreshFromBuffer(OLED);		//更新缓存	
-			
-		}		
-	}
-	
-	
+		vState_machine_run(ucKey);				//轮询状态机--并实现对应操作的缓存写入
+		vOledRefreshFromBuffer(OLED);			//更新缓存
+		
+	}	
 	
 }
